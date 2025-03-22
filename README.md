@@ -25,7 +25,7 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box.git
 
 ### 基础命令
 ```plaintext
-/盒  或  /开盒
+/盒@某人  或  /开盒@某人
 ```
 ## 📌 注意事项
 1. 开盒信息在QQ主页也能查看，本插件仅供学习交流，作者不承担任何责任
