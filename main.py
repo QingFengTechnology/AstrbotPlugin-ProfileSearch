@@ -6,12 +6,7 @@ import astrbot.api.message_components as Comp
 from astrbot import logger
 from astrbot.api.event import filter
 
-@filter.on_astrbot_loaded()
-async def on_astrbot_loaded(self):
-    try:
-        import emoji
-    except ImportError:
-        logger.error("astrbot_plugin_box依赖的 emoji 库未安装。请在控制台通过命令安装：pip install emoji")
+
 
 
 @register("盒", "Zhalslar", "开盒插件", "1.0.0", "https://github.com/Zhalslar/astrbot_plugin_box")
