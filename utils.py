@@ -1,7 +1,5 @@
 from datetime import datetime
-
 import aiohttp
-
 from astrbot import logger
 
 
@@ -144,88 +142,89 @@ def get_status(status_code: int) -> str:
     return status_map.get(status_code, f"状态{status_code}")
 
 
-def transform(info: dict, info2: dict) -> str:
-    r = f"Q号：{info['uin']}"
-    r += f"\n昵称：{info['nick']}"
+def transform(info: dict, info2: dict) -> list:
+    replay = []
 
-    if info2['card']:
-        r += f"\n群昵称：{(info2['card'])}"
-    if info2['title']:
-        r += f"\n头衔：{(info2['title'])}"
+    replay.append(f"Q号：{info['uin']}")
+    replay.append(f"昵称：{info['nick']}")
 
-    if info['status'] and int(info['status']) != 20:
-        r += f"\n状态：{get_status(int(info['status']))}"
+    if info2.get('card', False):
+        replay.append(f"群昵称：{(info2['card'])}")
+    if info2.get('title', False):
+        replay.append(f"头衔：{(info2['title'])}")
+
+    if info.get('status', False) and int(info['status']) != 20:
+        replay.append(f"状态：{get_status(int(info['status']))}")
 
     if info['sex'] == "male":
-        r += f"\n性别：男孩纸"
-    if info['sex'] == "female":
-        r += f"\n性别：女孩纸"
+        replay.append(f"性别：男孩纸")
+    elif info['sex'] == "female":
+        replay.append(f"性别：女孩纸")
 
-    if info['birthday_year'] and info['birthday_month'] and info['birthday_day']:
-        r += f"\n诞辰：{info['birthday_year']}-{info['birthday_month']}-{info['birthday_day']}"
-        r += f"\n星座：{get_constellation(int(info['birthday_month']), int(info['birthday_day']))}"
-        r += f"\n生肖：{get_zodiac(int(info['birthday_year']), int(info['birthday_month']), int(info['birthday_day']))}"
-    if info['age'] and 3 < int(info['age']) < 60:
-        r += f"\n年龄：{info['age']}岁"
+    if info.get('birthday_year', False) and info.get('birthday_month', False) and info.get('birthday_day', False):
+        replay.append(f"诞辰：{info['birthday_year']}-{info['birthday_month']}-{info['birthday_day']}")
+        replay.append(f"星座：{get_constellation(int(info['birthday_month']), int(info['birthday_day']))}")
+        replay.append(
+            f"生肖：{get_zodiac(int(info['birthday_year']), int(info['birthday_month']), int(info['birthday_day']))}")
+    if info.get('age', False) and 3 < int(info['age']) < 60:
+        replay.append(f"年龄：{info['age']}岁")
 
-    if info['phoneNum'] != "-":
-        r += f"\n电话：{info['phoneNum']}"
-    if info['eMail']:
-        r += f"\n邮箱：{info['eMail']}"
-    if info['postCode']:
-        r += f"\n邮编：{info['postCode']}"
+    if info.get('phoneNum', '-') != "-":
+        replay.append(f"电话：{info['phoneNum']}")
+    if info.get('eMail', False):
+        replay.append(f"邮箱：{info['eMail']}")
+    if info.get('postCode', False):
+        replay.append(f"邮编：{info['postCode']}")
 
-    if info['country']:
-        r += f"\n现居：{info['country']}"
-    if info['city']:
-        r += f"-{info['city']}"
-    if info['homeTown'] != "0-0-0":
-        r += f"\n来自：{parse_home_town(info['homeTown'])}"
-    if info['address']:
-        r += f"\n地址：{info['address']}"
+    if info.get('country', False):
+        replay.append(f"现居：{info['country']}")
+    if info.get('city', False):
+        replay[-1] += f"-{info['city']}"
+    if info.get('homeTown', "0-0-0") != "0-0-0":
+        replay.append(f"来自：{parse_home_town(info['homeTown'])}")
+    if info.get('address', False):
+        replay.append(f"地址：{info['address']}")
 
-    if info['kBloodType']:
-        r += f"\n血型：{get_blood_type(int(info['kBloodType']))}"
-    if int(info['makeFriendCareer']) != 0:
-        r += f"\n职业：{get_career(int(info['makeFriendCareer']))}"
+    if info.get('kBloodType', False):
+        replay.append(f"血型：{get_blood_type(int(info['kBloodType']))}")
+    if int(info.get('makeFriendCareer', 0)) != 0:
+        replay.append(f"职业：{get_career(int(info['makeFriendCareer']))}")
 
-    if info['remark']:
-        r += f"\n备注：{info['remark']}"
-    # if info['postCode']:
-    #     r += f"\n兴趣：{info['postCode']}"
-    if info['labels']:
-        r += f"\n标签：{info['labels']}"
+    if info.get('remark', False):
+        replay.append(f"备注：{info['remark']}")
+    if info.get('labels', False):
+        replay.append(f"标签：{info['labels']}")
 
-    if info2['unfriendly']:
-        r += f"\n不良记录：有"
+    if info2.get('unfriendly', False):
+        replay.append(f"不良记录：有")
 
-    if info2['is_robot']:
-        r += f"\n是否为bot: 是"
+    if info2.get('is_robot', False):
+        replay.append(f"是否为bot: 是")
 
-    if info['is_vip']:
-        r += f"\nVIP：已开"
-    if info['is_years_vip']:
-        r += f"\n年费VIP：已开"
-    if int(info['vip_level']) != 0:
-        r += f"\nVIP等级：{info['vip_level']}"
+    if info.get('is_vip', False):
+        replay.append(f"VIP：已开")
+    if info.get('is_years_vip', False):
+        replay.append(f"年费VIP：已开")
+    if int(info.get('vip_level', 0)) != 0:
+        replay.append(f"VIP等级：{info['vip_level']}")
 
-    if int(info['login_days']) != 0:
-        r += f"\n连续登录天数：{info['login_days']}"
+    if int(info.get('login_days', 0)) != 0:
+        replay.append(f"连续登录天数：{info['login_days']}")
 
-    if info2['level']:
-        r += f"\n群等级：{int(info2['level'])}级"
-    if info2['join_time']:
-        r += f"\n加群时间：{datetime.fromtimestamp(info2['join_time']).strftime('%Y-%m-%d')}"
+    if info2.get('level', False):
+        replay.append(f"群等级：{int(info2['level'])}级")
+    if info2.get('join_time', False):
+        replay.append(f"加群时间：{datetime.fromtimestamp(info2['join_time']).strftime('%Y-%m-%d')}")
 
-    if info['qqLevel']:
-        r += f"\nQQ等级：{int(info['qqLevel'])}级"
-    if info['reg_time']:
-        r += f"\n注册时间：{datetime.fromtimestamp(info['reg_time']).strftime('%Y年')}"
+    if info.get('qqLevel', False):
+        replay.append(f"QQ等级：{int(info['qqLevel'])}级")
+    if info.get('reg_time', False):
+        replay.append(f"注册时间：{datetime.fromtimestamp(info['reg_time']).strftime('%Y年')}")
 
-    if info['long_nick']:
-        r += f"\n签名：{info['long_nick'][:15]}"
-        remaining_nick = info['long_nick'][15:]
-        while remaining_nick:
-            r += f"\n{remaining_nick[:15]}"
-            remaining_nick = remaining_nick[15:]
-    return r
+    if info.get('long_nick', False):
+        long_nick_lines = [info['long_nick'][i:i + 15] for i in range(0, len(info['long_nick']), 15)]
+        replay.append(f"签名：{long_nick_lines[0]}")
+        for line in long_nick_lines[1:]:
+            replay.append(line)
+
+    return replay
