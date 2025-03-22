@@ -1,10 +1,18 @@
 
 import random
 import os
-import emoji
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 
+from astrbot import logger
+
+# 尝试导入emoji模块，如果不存在，则设置一个标志
+try:
+    import emoji
+    EMOJI_AVAILABLE = True
+except ImportError:
+    EMOJI_AVAILABLE = False
+    logger.error("警告: astrbot_plugin_box依赖的 emoji 库未安装。请在控制台运行以下命令进行安装:\n\tpip install emoji")
 
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 FONT_PATH = os.path.join(PLUGIN_DIR, "resource", "可爱字体.ttf")
@@ -66,13 +74,24 @@ def create_image(avatar: bytes, reply: list):
     return img_path
 
 
+
+
 def _draw_multi(img, text, font_size=35, text_x=10, text_y=10):
     """
     在图片上绘制多语言文本（支持中英文、Emoji、符号和换行符）。
+    如果emoji库不可用，则跳过emoji的特殊处理。
     """
     # 加载字体
-    cute_font= ImageFont.truetype(FONT_PATH, font_size)
-    emoji_font = ImageFont.truetype(EMOJI_FONT_PATH, font_size)
+    cute_font = ImageFont.truetype(FONT_PATH, font_size)
+    # 仅当emoji库可用时加载emoji字体
+    if EMOJI_AVAILABLE:
+        try:
+            emoji_font = ImageFont.truetype(EMOJI_FONT_PATH, font_size)
+        except IOError:
+            # 如果指定的emoji字体路径无效，仍继续使用普通字体
+            emoji_font = cute_font
+    else:
+        emoji_font = cute_font  # 当emoji不可用时，使用普通字体代替
 
     lines = text.split("\n")  # 按换行符分割文本
     current_y = text_y
@@ -83,12 +102,15 @@ def _draw_multi(img, text, font_size=35, text_x=10, text_y=10):
         line_color = (random.randint(0, 128), random.randint(0, 128), random.randint(0, 128))
         current_x = text_x
         for char in line:
-            if char in emoji.EMOJI_DATA:
+            if EMOJI_AVAILABLE and char in emoji.EMOJI_DATA:
                 draw.text((current_x, current_y + 10), char, font=emoji_font, fill=line_color)
             else:
                 draw.text((current_x, current_y), char, font=cute_font, fill=line_color)
-
             bbox = cute_font.getbbox(char)
             current_x += bbox[2] - bbox[0]
         current_y += 40
     return img
+
+# 确保在调用_draw_multi前已经尝试了导入emoji
+if not EMOJI_AVAILABLE:
+    print("警告: emoji库未安装。将不支持emoji的特殊处理。")
