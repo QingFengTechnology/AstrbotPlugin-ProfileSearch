@@ -27,22 +27,9 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box.git
 ```plaintext
 /盒  或  /开盒
 ```
-**示例输出：**
-
-![](https://p.ipic.vip/u7el21.png)
-
-![](https://p.ipic.vip/l0xwq2.png)
-
-
 ## 📌 注意事项
-1. Linux 系统需安装基础工具：
-```bash
-sudo apt-get install procps sysstat jinja2 psutil jinja2 PIL requests matplotlib
-#或者使用pip
-pip install psutil jinja2 PIL requests matplotlib
-```
-2. 首次使用需授予执行权限
-3. 推荐监控间隔 ≥ 60 秒
+1. 开盒信息在QQ主页也能查看，本插件仅供学习交流，作者不承担任何责任
+
 
 ## 🤝 参与贡献
 1. Zhalslar（饰乐），我自己哈哈哈
