@@ -1,10 +1,14 @@
 
 import random
 import time
-import emoji
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
+try:
+    import emoji
+except ImportError as e:
+    logger.error("astrbot_plugin_box依赖的 emoji 库未安装。请在控制台通过命令安装：pip install emoji")
+    exit(1)
 
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 FONT_PATH = os.path.join(PLUGIN_DIR, "resource", "可爱字体.ttf")
