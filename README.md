@@ -1,0 +1,2 @@
+# astrbot_plugin_box
+一个通过Onebot协议接口拉取用户QQ主页信息的开盒插件
