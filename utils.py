@@ -146,7 +146,7 @@ def transform(info: dict, info2: dict) -> list:
     replay = []
 
     replay.append(f"Q号：{info['uin']}")
-    replay.append(f"昵称：{info['nick']}")
+    replay.append(f"昵称：{info['nickname']}")
 
     if info2.get('card', False):
         replay.append(f"群昵称：{(info2['card'])}")
