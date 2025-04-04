@@ -1,5 +1,7 @@
 from datetime import datetime
 import aiohttp
+import requests
+
 from astrbot import logger
 
 
@@ -127,19 +129,15 @@ def parse_home_town(home_town_code: str) -> str:
         return country
 
 
-def get_status(status_code: int) -> str:
-    # 在线状态代码映射表，还没完善 TODO
-    status_map = {
-        1: "在线", 2: "Q我吧", 3: "离开", 4: "忙碌", 5: "请勿打扰",
-        6: "隐身", 7: "我的电量", 8: "听歌中", 9: "有亿点冷", 10: "出去浪",
-        11: "去旅行", 12: "被掏空", 13: "今日步数", 14: "今日天气", 15: "我crush了",
-        16: "爱你", 17: "恋爱中", 18: "嗨到飞起", 19: "水逆退散", 20: "好运锦鲤",
-        21: "元气满满", 22: "一言难尽", 23: "难得糊涂", 24: "emo中", 25: "我太难了",
-        26: "我想开了", 27: "我没事", 28: "想静静", 29: "悠哉哉", 30: "信号弱",
-        31: "睡觉中", 32: "肝作业", 33: "学习中", 34: "搬砖中", 35: "摸鱼中",
-        36: "无聊中", 37: "TiMi中", 38: "一起元梦", 39: "求星搭子", 40: "熬夜中", 41: "追剧中"
-    }
-    return status_map.get(status_code, f"状态{status_code}")
+def get_state(user_id) -> str | None:
+    """查询QQ状态"""
+    url = f"https://api.sumt.cn/api/qq.state.php?qq={user_id}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return data.get("state")
+    else:
+        return "未知"
 
 
 def transform(info: dict, info2: dict) -> list:
@@ -153,8 +151,8 @@ def transform(info: dict, info2: dict) -> list:
     if info2.get('title', False):
         replay.append(f"头衔：{(info2['title'])}")
 
-    if info.get('status', False) and int(info['status']) != 20:
-        replay.append(f"状态：{get_status(int(info['status']))}")
+    # if info.get('status', False) and int(info['status']) != 20:
+    # replay.append(f"状态：{get_state(info['uin'])}")
 
     if info['sex'] == "male":
         replay.append(f"性别：男孩纸")

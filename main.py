@@ -8,14 +8,14 @@ from astrbot.api.event import filter
 
 
 
-
-@register("盒", "Zhalslar", "开盒插件", "1.0.0", "https://github.com/Zhalslar/astrbot_plugin_box")
+@register("盒", "Zhalslar", "开盒插件", "1.0.2")
 class Box(Star):
     def __init__(self, context: Context):
         super().__init__(context)
 
     @filter.command("盒", alias={"开盒"})
     async def box(self, event: AstrMessageEvent):
+        """/盒@user"""
         messages = event.get_messages()
         send_id = event.get_sender_id()
         self_id = event.get_self_id()
@@ -26,14 +26,18 @@ class Box(Star):
                 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import AiocqhttpMessageEvent
                 assert isinstance(event, AiocqhttpMessageEvent)
                 client = event.bot
+
                 stranger_payloads = {"user_id": target_user_id}
                 member_payloads = {"user_id": target_user_id, "group_id": group_id,}
                 stranger_info: dict = await client.api.call_action('get_stranger_info', **stranger_payloads)
                 member_info: dict = await client.api.call_action('get_group_member_info', **member_payloads)
+
                 avatar: bytes = await get_avatar(target_user_id)
                 reply: list = transform(stranger_info, member_info)
-                img_path: str = create_image(avatar, reply)
-                yield event.make_result().file_image(img_path)
+                image: bytes = create_image(avatar, reply)
+                chain = [Comp.Image.fromBytes(image)]
+                yield event.chain_result(chain)
+
         except Exception as e:
             logger.error(f"开盒出错: {e}")
 
