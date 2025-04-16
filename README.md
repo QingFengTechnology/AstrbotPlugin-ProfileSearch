@@ -1,22 +1,31 @@
+
+<div align="center">
+
+![:name](https://count.getloli.com/@astrbot_plugin_QQAdmin?name=astrbot_plugin_QQAdmin&theme=minecraft&padding=6&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+
 # astrbot_plugin_box
-# AstrBot 开盒插件
+
+_✨ [astrbot](https://github.com/AstrBotDevs/AstrBot) 开盒插件 ✨_  
 
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![AstrBot](https://img.shields.io/badge/AstrBot-3.4%2B-orange.svg)](https://github.com/Soulter/AstrBot)
+[![GitHub](https://img.shields.io/badge/作者-Zhalslar-blue)](https://github.com/Zhalslar)
 
-利用Onebot协议的接口获取QQ用户信息,并以图片形式展示（获取的信息是QQ主页也能提供的）
+</div>
 
-[![USER](https://img.shields.io/badge/user-Meguminlove-blue)](https://github.com/Meguminlove)
+## 🤝 介绍
 
-
+开盒别人！利用Onebot协议的接口获取QQ用户信息,并以图片形式展示（获取的信息是QQ主页也能提供的）
 
 ## 📦 安装
+
+- 可以直接在astrbot的插件市场搜索astrbot_plugin_box，点击安装，耐心等待安装完成即可  
 
 ```bash
 # 克隆仓库到插件目录
 cd /AstrBot/data/plugins
-git clone https://github.com/Zhalslar/astrbot_plugin_box.git
+git clone https://github.com/Zhalslar/astrbot_plugin_box
 
 # 控制台重启AstrBot
 ```
@@ -24,16 +33,29 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box.git
 ## ⌨️ 使用命令
 
 ### 基础命令
+
 ```plaintext
 /盒@某人  或  /开盒@某人
 ```
+
+### 示例图
+
+![f2381ed966274618ce9aac485554d26](https://github.com/user-attachments/assets/4e3c43fb-bfc1-4a83-abe6-8d79a48f9b1c)
+
+## 🤝 TODO
+
+- [x] 展示用户QQ主页信息
+- [x] 展示用户在线状态
+- [ ] 展示用户当前IP所在地（可能容易不会加这个）
+
+## 👥 贡献指南
+
+- 🌟 Star 这个项目！（点右上角的星星，感谢支持！）
+- 🐛 提交 Issue 报告问题
+- 💡 提出新功能建议
+- 🔧 提交 Pull Request 改进代码
+
 ## 📌 注意事项
-1. 开盒信息在QQ主页也能查看，本插件仅供学习交流，作者不承担任何责任
 
-
-## 🤝 参与贡献
-1. Zhalslar（饰乐），我自己哈哈哈
-
-
-## 📜 开源协议
-本项目采用 [MIT License](LICENSE)
+- 开盒信息在QQ主页也能查看，本插件仅供学习交流，作者不承担任何责任
+- 想第一时间得到反馈的可以来作者的插件反馈群（QQ群）：460973561
