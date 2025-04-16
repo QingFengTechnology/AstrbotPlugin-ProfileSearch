@@ -1,7 +1,7 @@
 
 <div align="center">
 
-![:name](https://count.getloli.com/@astrbot_plugin_QQAdmin?name=astrbot_plugin_QQAdmin&theme=minecraft&padding=6&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+![:name](https://count.getloli.com/@astrbot_plugin_box?name=astrbot_plugin_box&theme=minecraft&padding=6&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
 # astrbot_plugin_box
 
@@ -30,9 +30,9 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box
 # 控制台重启AstrBot
 ```
 
-## ⌨️ 使用命令
+## ⌨️ 使用说明
 
-### 基础命令
+### 命令
 
 ```plaintext
 /盒@某人  或  /开盒@某人
@@ -46,8 +46,8 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box
 
 - [x] 展示用户QQ主页信息
 - [x] 展示用户在线状态
-- [x] 正确处理省份代号，展示省份名
-- [x] 正确处理国家代号，展示国家名
+- [ ] 正确处理省份代号，展示省份名
+- [ ] 正确处理国家代号，展示国家名
 - [ ] 展示用户当前IP所在地（可能永远不会加这个）
 
 ## 👥 贡献指南
