@@ -23,12 +23,13 @@ class Box(Star):
         super().__init__(context)
 
     @filter.command("盒", alias={"开盒"})
-    async def box(self, event: AiocqhttpMessageEvent):
-        """/盒@某人"""
+    async def box(self, event: AiocqhttpMessageEvent, input_id: int | None = None):
+        """/盒@某人 或 /盒 QQ"""
         messages = event.get_messages()
         send_id = event.get_sender_id()
         self_id = event.get_self_id()
-        target_id = next(
+
+        target_id = input_id or next(
             (
                 str(seg.qq)
                 for seg in messages
@@ -38,31 +39,38 @@ class Box(Star):
         )
         group_id = event.get_group_id()
         client = event.bot
+
+        # 获取用户信息
         try:
             stranger_info = await client.get_stranger_info(
                 user_id=int(target_id), no_cache=True
             )
-            print(stranger_info)
+        except:  # noqa: E722
+            yield event.plain_result("无效QQ号")
+            return
+
+        # 获取用户群信息
+        try:
             member_info = await client.get_group_member_info(
                 user_id=int(target_id), group_id=int(group_id)
             )
+        except:  # noqa: E722
+            member_info = {}
+            pass
 
-            avatar: bytes = await self.get_avatar(target_id)
-            reply: list = self.transform(stranger_info, member_info)  # type: ignore
-            image: bytes = create_image(avatar, reply)
-            chain = [Comp.Image.fromBytes(image)]
-            yield event.chain_result(chain)  # type: ignore
-
-        except Exception as e:
-            logger.error(f"开盒出错: {e}")
+        avatar: bytes = await self.get_avatar(str(target_id))
+        reply: list = self.transform(stranger_info, member_info)  # type: ignore
+        image: bytes = create_image(avatar, reply)
+        chain = [Comp.Image.fromBytes(image)]
+        yield event.chain_result(chain)  # type: ignore
 
     def transform(self, info: dict, info2: dict) -> list:
         replay = []
 
-        if user_id := info2.get("user_id"):
+        if user_id := info.get("user_id"):
             replay.append(f"Q号：{user_id}")
 
-        if nickname := info2.get("nickname"):
+        if nickname := info.get("nickname"):
             replay.append(f"昵称：{nickname}")
 
         if card := info2.get("card"):
@@ -321,6 +329,6 @@ class Box(Star):
 
         if country_code == "49" and province_code != "0":  # 解析中国省份
             province = province_map.get(province_code, f"{province_code}省")
-            #province = f"{province_code}省"
+            # province = f"{province_code}省"
             reply = province
         return reply
