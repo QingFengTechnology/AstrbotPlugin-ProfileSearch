@@ -27,7 +27,8 @@ def create_image(avatar: bytes, reply: list) -> bytes:
     # 创建临时图片计算文本的宽高，得到最图片高度
     temp_img = Image.new("RGBA", (1, 1))
     temp_draw = ImageDraw.Draw(temp_img)
-    text_bbox = temp_draw.textbbox((0, 0), reply_str, font=cute_font)
+    no_emoji_reply = "".join(char for char in reply_str if not emoji.is_emoji(char))
+    text_bbox = temp_draw.textbbox((0, 0), no_emoji_reply, font=cute_font)
     text_width, text_height = (
         int(text_bbox[2] - text_bbox[0]),
         int(text_bbox[3] - text_bbox[1]),
