@@ -1,10 +1,13 @@
 from datetime import datetime
 
+from aiocqhttp import CQHttp
 import aiohttp
 from astrbot.api.star import Context, Star, register
+from astrbot.core.config.astrbot_config import AstrBotConfig
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
     AiocqhttpMessageEvent,
 )
+from astrbot.core.star.filter.platform_adapter_type import PlatformAdapterType
 from .draw import create_image
 import astrbot.api.message_components as Comp
 from astrbot import logger
@@ -19,35 +22,21 @@ from astrbot.api.event import filter
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
-    def __init__(self, context: Context):
+    def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
+        self.auto_box: bool = config.get("auto_box", False)
+        self.auto_box_groups: list[str] =config.get("auto_box_groups", [])
 
-    @filter.command("盒", alias={"开盒"})
-    async def box(self, event: AiocqhttpMessageEvent, input_id: int | None = None):
-        """/盒@某人 或 /盒 QQ"""
-        messages = event.get_messages()
-        send_id = event.get_sender_id()
-        self_id = event.get_self_id()
-
-        target_id = input_id or next(
-            (
-                str(seg.qq)
-                for seg in messages
-                if (isinstance(seg, Comp.At)) and str(seg.qq) != self_id
-            ),
-            send_id,
-        )
-        group_id = event.get_group_id()
-        client = event.bot
-
+    async def box(self, client: CQHttp, target_id: str, group_id: str):
+        """开盒的主流程函数"""
         # 获取用户信息
         try:
             stranger_info = await client.get_stranger_info(
                 user_id=int(target_id), no_cache=True
             )
         except:  # noqa: E722
-            yield event.plain_result("无效QQ号")
-            return
+            chain = [Comp.Plain("无效QQ号")]
+            return chain
 
         # 获取用户群信息
         try:
@@ -62,7 +51,57 @@ class Box(Star):
         reply: list = self.transform(stranger_info, member_info)  # type: ignore
         image: bytes = create_image(avatar, reply)
         chain = [Comp.Image.fromBytes(image)]
+        return chain
+
+    @filter.command("盒", alias={"开盒"})
+    async def on_command(
+        self, event: AiocqhttpMessageEvent, input_id: int | None = None
+    ):
+        """/盒@某人 或 /盒 QQ"""
+        client = event.bot
+        messages = event.get_messages()
+        send_id = event.get_sender_id()
+        self_id = event.get_self_id()
+        group_id = event.get_group_id()
+
+        target_id = input_id or next(
+            (
+                str(seg.qq)
+                for seg in messages
+                if (isinstance(seg, Comp.At)) and str(seg.qq) != self_id
+            ),
+            send_id,
+        )
+        chain = await self.box(client, target_id=str(target_id), group_id=group_id)
         yield event.chain_result(chain)  # type: ignore
+
+    @filter.platform_adapter_type(PlatformAdapterType.AIOCQHTTP)
+    async def handle_group_add(self, event: AiocqhttpMessageEvent):
+        """自动开盒新群友"""
+        if not self.auto_box: # 自动开盒开关
+            return
+
+        if not hasattr(event, "message_obj") or not hasattr(
+            event.message_obj, "raw_message"
+        ):
+            return
+        raw_message = event.message_obj.raw_message
+        # 处理 raw_message
+        if not raw_message or not isinstance(raw_message, dict):
+            return
+        # 确保是 notice 类型的消息
+        if raw_message.get("post_type") != "notice":
+            return
+        # 群成员增加事件
+        if raw_message.get("notice_type") == "group_increase":
+            # 开盒群聊白名单
+            group_id = raw_message.get("group_id")
+            if str(group_id) not in self.auto_box_groups:
+                return
+            user_id = raw_message.get("user_id")
+            client = event.bot
+            chain = await self.box(client,target_id=str(user_id),group_id=str(group_id))
+            yield event.chain_result(chain)  # type: ignore
 
     def transform(self, info: dict, info2: dict) -> list:
         replay = []

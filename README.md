@@ -34,8 +34,13 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box
 
 ### 命令
 
+- 自动开盒新群友（需在配置里添加群聊白名单）
+
+- 指令调用，如下：
+
 ```plaintext
-/盒@某人  或  /开盒@某人
+/盒@某人
+/盒 QQ号
 ```
 
 ### 示例图
