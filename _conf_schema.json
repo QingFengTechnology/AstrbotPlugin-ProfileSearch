@@ -1,0 +1,14 @@
+{
+    "auto_box": {
+        "description": "是否自动开盒新群友",
+        "type": "bool",
+        "hint": "开启后，新进群的友友会被自动开盒",
+        "default": 1
+    },
+    "auto_box_groups": {
+        "description": "自动开盒群聊白名单",
+        "type": "list",
+        "hint": "只监听白名单里的群聊，其他群不会被自动开盒",
+        "default": []
+    }
+}
