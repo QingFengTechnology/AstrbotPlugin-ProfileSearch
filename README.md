@@ -20,7 +20,8 @@ _✨ [astrbot](https://github.com/AstrBotDevs/AstrBot) 开盒插件 ✨_
 
 ## 📦 安装
 
-- 可以直接在astrbot的插件市场搜索astrbot_plugin_box，点击安装，耐心等待安装完成即可  
+- 可以直接在astrbot的插件市场搜索astrbot_plugin_box，点击安装，耐心等待安装完成即可
+- 若是安装失败，可以尝试直接克隆源码：
 
 ```bash
 # 克隆仓库到插件目录
