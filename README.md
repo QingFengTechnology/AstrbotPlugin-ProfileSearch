@@ -20,7 +20,8 @@ _✨ [astrbot](https://github.com/AstrBotDevs/AstrBot) 开盒插件 ✨_
 
 ## 📦 安装
 
-- 可以直接在astrbot的插件市场搜索astrbot_plugin_box，点击安装，耐心等待安装完成即可  
+- 可以直接在astrbot的插件市场搜索astrbot_plugin_box，点击安装，耐心等待安装完成即可
+- 若是安装失败，可以尝试直接克隆源码：
 
 ```bash
 # 克隆仓库到插件目录
@@ -45,9 +46,10 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box
 
 ### 示例图
 
-![f2381ed966274618ce9aac485554d26](https://github.com/user-attachments/assets/4e3c43fb-bfc1-4a83-abe6-8d79a48f9b1c)
+![33cd17b7bd27520aee2f463ff8a9d12](https://github.com/user-attachments/assets/97ffe26f-bf18-4cbe-93f4-1eb82e08edeb)
 
 ## 🤝 TODO
+
 
 - [x] 展示用户QQ主页信息
 - [x] 展示用户在线状态
