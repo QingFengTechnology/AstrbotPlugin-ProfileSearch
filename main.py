@@ -18,7 +18,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.0.3",
+    "1.0.8",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -96,7 +96,8 @@ class Box(Star):
         if raw_message.get("notice_type") == "group_increase":
             # 开盒群聊白名单
             group_id = raw_message.get("group_id")
-            if str(group_id) not in self.auto_box_groups:
+
+            if self.auto_box_groups and str(group_id) not in self.auto_box_groups:
                 return
             user_id = raw_message.get("user_id")
             client = event.bot
@@ -346,6 +347,7 @@ class Box(Star):
             "222": "特里尔",
             "217": "法国",
             "233": "美国",
+            "322": "美国",
         }
         # 中国省份（包括直辖市）代码映射表，由于不是一一对应，效果不佳
         province_map = {
