@@ -18,7 +18,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.0.8",
+    "1.0.9",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
