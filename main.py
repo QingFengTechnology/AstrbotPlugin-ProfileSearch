@@ -18,7 +18,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.0.9",
+    "1.1.0",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -84,6 +84,7 @@ class Box(Star):
         ):
             return
         raw_message = event.message_obj.raw_message
+
         # 处理 raw_message
         if not raw_message or not isinstance(raw_message, dict):
             return
@@ -94,11 +95,13 @@ class Box(Star):
         if raw_message.get("notice_type") == "group_increase":
             # 开盒群聊白名单
             group_id = raw_message.get("group_id")
-            if self.auto_box_groups and str(group_id) in self.auto_box_groups:
-                user_id = raw_message.get("user_id")
-                client = event.bot
-                comp = await self.box(client,target_id=str(user_id),group_id=str(group_id))
-                yield event.chain_result([comp])  # type: ignore
+            if self.auto_box_groups:
+                if str(group_id) not in self.auto_box_groups:
+                    return
+            user_id = raw_message.get("user_id")
+            client = event.bot
+            comp = await self.box(client,target_id=str(user_id),group_id=str(group_id))
+            yield event.chain_result([comp])  # type: ignore
 
     def transform(self, info: dict, info2: dict) -> list:
         reply = []
