@@ -3,7 +3,7 @@
         "description": "是否自动开盒新群友",
         "type": "bool",
         "hint": "开启后，新进群的友友会被自动开盒",
-        "default": 1
+        "default": false
     },
     "auto_box_groups": {
         "description": "自动开盒群聊白名单",
