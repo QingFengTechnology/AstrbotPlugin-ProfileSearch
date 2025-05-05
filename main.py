@@ -18,7 +18,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.0.8",
+    "1.0.9",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -35,8 +35,7 @@ class Box(Star):
                 user_id=int(target_id), no_cache=True
             )
         except:  # noqa: E722
-            chain = [Comp.Plain("无效QQ号")]
-            return chain
+            return Comp.Plain("无效QQ号")
 
         # 获取用户群信息
         try:
@@ -50,8 +49,7 @@ class Box(Star):
         avatar: bytes = await self.get_avatar(str(target_id))
         reply: list = self.transform(stranger_info, member_info)  # type: ignore
         image: bytes = create_image(avatar, reply)
-        chain = [Comp.Image.fromBytes(image)]
-        return chain
+        return Comp.Image.fromBytes(image)
 
     @filter.command("盒", alias={"开盒"})
     async def on_command(
@@ -72,8 +70,8 @@ class Box(Star):
             ),
             send_id,
         )
-        chain = await self.box(client, target_id=str(target_id), group_id=group_id)
-        yield event.chain_result(chain)  # type: ignore
+        comp = await self.box(client, target_id=str(target_id), group_id=group_id)
+        yield event.chain_result([comp])  # type: ignore
 
     @filter.platform_adapter_type(PlatformAdapterType.AIOCQHTTP)
     async def handle_group_add(self, event: AiocqhttpMessageEvent):
@@ -96,126 +94,126 @@ class Box(Star):
         if raw_message.get("notice_type") == "group_increase":
             # 开盒群聊白名单
             group_id = raw_message.get("group_id")
-
-            if self.auto_box_groups and str(group_id) not in self.auto_box_groups:
-                return
-            user_id = raw_message.get("user_id")
-            client = event.bot
-            chain = await self.box(client,target_id=str(user_id),group_id=str(group_id))
-            yield event.chain_result(chain)  # type: ignore
+            if self.auto_box_groups and str(group_id) in self.auto_box_groups:
+                user_id = raw_message.get("user_id")
+                client = event.bot
+                comp = await self.box(client,target_id=str(user_id),group_id=str(group_id))
+                yield event.chain_result([comp])  # type: ignore
 
     def transform(self, info: dict, info2: dict) -> list:
-        replay = []
+        reply = []
 
         if user_id := info.get("user_id"):
-            replay.append(f"Q号：{user_id}")
+            reply.append(f"Q号：{user_id}")
 
         if nickname := info.get("nickname"):
-            replay.append(f"昵称：{nickname}")
+            reply.append(f"昵称：{nickname}")
 
         if card := info2.get("card"):
-            replay.append(f"群昵称：{card}")
+            reply.append(f"群昵称：{card}")
 
         if title := info2.get("title"):
-            replay.append(f"头衔：{title}")
+            reply.append(f"头衔：{title}")
 
         # if info.get('status', False) and int(info['status']) != 20:
-        # replay.append(f"状态：{get_state(info['uin'])}")
+        # reply.append(f"状态：{get_state(info['uin'])}")
 
         sex = info.get("sex")
         if sex == "male":
-            replay.append("性别：男孩纸")
+            reply.append("性别：男孩纸")
         elif sex == "female":
-            replay.append("性别：女孩纸")
+            reply.append("性别：女孩纸")
 
         if (
             info.get("birthday_year")
             and info.get("birthday_month")
             and info.get("birthday_day")
         ):
-            replay.append(
+            reply.append(
                 f"诞辰：{info['birthday_year']}-{info['birthday_month']}-{info['birthday_day']}"
             )
-            replay.append(
+            reply.append(
                 f"星座：{self.get_constellation(int(info['birthday_month']), int(info['birthday_day']))}"
             )
-            replay.append(
+            reply.append(
                 f"生肖：{self.get_zodiac(int(info['birthday_year']), int(info['birthday_month']), int(info['birthday_day']))}"
             )
 
         if age := info.get("age"):
-            replay.append(f"年龄：{age}岁")
+            reply.append(f"年龄：{age}岁")
 
         if phoneNum := info.get("phoneNum"):
             if phoneNum != "-":
-                replay.append(f"电话：{phoneNum}")
+                reply.append(f"电话：{phoneNum}")
 
         if eMail := info.get("eMail", False):
             if eMail != "-":
-                replay.append(f"邮箱：{eMail}")
+                reply.append(f"邮箱：{eMail}")
 
         if postCode := info.get("postCode", False):
-            replay.append(f"邮编：{postCode}")
+            if postCode != "-":
+                reply.append(f"邮编：{postCode}")
 
         if country := info.get("country"):
-            replay.append(f"现居：{country}")
+                reply.append(f"现居：{country if country != '中国' else ''}")
         if province := info.get("province"):
-            replay[-1] += f"-{province}"
+            reply[-1] += f"{province}"
         if city := info.get("city"):
-            replay[-1] += f"-{city}"
+            reply[-1] += f"-{city}"
 
         if homeTown := info.get("homeTown"):
             if homeTown != "0-0-0":
-                replay.append(f"来自：{self.parse_home_town(homeTown)}")
+                reply.append(f"来自：{self.parse_home_town(homeTown)}")
 
-        if info.get("address", False):
-            replay.append(f"地址：{info['address']}")
+        if address := info.get("address", False):
+            if address != "-":
+                reply.append(f"地址：{address}")
 
         if kBloodType := info.get("kBloodType"):
-            replay.append(f"血型：{self.get_blood_type(int(kBloodType))}")
+            reply.append(f"血型：{self.get_blood_type(int(kBloodType))}")
 
         if (
             makeFriendCareer := info.get("makeFriendCareer")
         ) and makeFriendCareer != "0":
-            replay.append(f"职业：{self.get_career(int(makeFriendCareer))}")
+            reply.append(f"职业：{self.get_career(int(makeFriendCareer))}")
 
         if remark := info.get("remark"):
-            replay.append(f"备注：{remark}")
+            reply.append(f"备注：{remark}")
 
         if labels := info.get("labels"):
-            replay.append(f"标签：{labels}")
+            reply.append(f"标签：{labels}")
 
         if info2.get("unfriendly"):
-            replay.append("不良记录：有")
+            reply.append("不良记录：有")
 
         if info2.get("is_robot"):
-            replay.append("是否为bot: 是")
+            reply.append("是否为bot: 是")
 
         if info.get("is_vip"):
-            replay.append("VIP：已开")
+            reply.append("VIP：已开")
 
         if info.get("is_years_vip"):
-            replay.append("年费VIP：已开")
+            reply.append("年费VIP：已开")
 
         if int(info.get("vip_level", 0)) != 0:
-            replay.append(f"VIP等级：{info['vip_level']}")
+            reply.append(f"VIP等级：{info['vip_level']}")
 
         if int(info.get("login_days", 0)) != 0:
-            replay.append(f"连续登录天数：{info['login_days']}")
+            reply.append(f"连续登录天数：{info['login_days']}")
 
         if level := info2.get("level"):
-            replay.append(f"群等级：{int(level)}级")
+            reply.append(f"群等级：{int(level)}级")
 
         if join_time := info2.get("join_time"):
-            replay.append(
+            reply.append(
                 f"加群时间：{datetime.fromtimestamp(join_time).strftime('%Y-%m-%d')}"
             )
 
         if qqLevel := info.get("qqLevel"):
-            replay.append(f"QQ等级：{self.qqLevel_to_icon(int(qqLevel))}")
+            reply.append(f"QQ等级：{self.qqLevel_to_icon(int(qqLevel))}")
 
         if reg_time := info.get("reg_time"):
-            replay.append(
+            reply.append(
                 f"注册时间：{datetime.fromtimestamp(reg_time).strftime('%Y年')}"
             )
 
@@ -223,11 +221,11 @@ class Box(Star):
             long_nick_lines = [
                 info["long_nick"][i : i + 15] for i in range(0, len(long_nick), 15)
             ]
-            replay.append(f"签名：{long_nick_lines[0]}")
+            reply.append(f"签名：{long_nick_lines[0]}")
             for line in long_nick_lines[1:]:
-                replay.append(line)
+                reply.append(line)
 
-        return replay
+        return reply
 
     @staticmethod
     def qqLevel_to_icon(level: int) -> str:
@@ -246,7 +244,7 @@ class Box(Star):
         avatar_url = f"https://q4.qlogo.cn/headimg_dl?dst_uin={user_id}&spec=640"
         try:
             async with aiohttp.ClientSession() as client:
-                response = await client.get(avatar_url, timeout=10)
+                response = await client.get(avatar_url)
                 response.raise_for_status()
                 return await response.read()
         except Exception as e:
