@@ -1,5 +1,7 @@
 from datetime import datetime
-
+from io import BytesIO
+from typing import Optional
+from PIL import Image
 from aiocqhttp import CQHttp
 import aiohttp
 from astrbot.api.star import Context, Star, register
@@ -18,7 +20,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.0",
+    "1.1.1",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -46,7 +48,13 @@ class Box(Star):
             member_info = {}
             pass
 
-        avatar: bytes = await self.get_avatar(str(target_id))
+        avatar: Optional[bytes] = await self.get_avatar(str(target_id))
+        # 如果获取头像失败，使用默认白图
+        if not avatar:
+            with BytesIO() as buffer:
+                Image.new("RGB", (640, 640), (255, 255, 255)).save(buffer, format="PNG")
+                avatar = buffer.getvalue()
+
         reply: list = self.transform(stranger_info, member_info)  # type: ignore
         image: bytes = create_image(avatar, reply)
         return Comp.Image.fromBytes(image)
@@ -243,7 +251,7 @@ class Box(Star):
         return result
 
     @staticmethod
-    async def get_avatar(user_id: str) -> bytes:
+    async def get_avatar(user_id: str) -> bytes | None:
         avatar_url = f"https://q4.qlogo.cn/headimg_dl?dst_uin={user_id}&spec=640"
         try:
             async with aiohttp.ClientSession() as client:
@@ -252,7 +260,7 @@ class Box(Star):
                 return await response.read()
         except Exception as e:
             logger.error(f"下载头像失败: {e}")
-            return b""
+
 
     @staticmethod
     def get_constellation(month: int, day: int) -> str:
