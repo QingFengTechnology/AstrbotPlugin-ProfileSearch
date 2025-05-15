@@ -68,11 +68,12 @@ class Box(Star):
             (
                 str(seg.qq)
                 for seg in event.get_messages()
-                if (isinstance(seg, Comp.At)) and str(seg.qq) != event.get_self_id()
-            )
-            or input_id,
-            event.get_sender_id(),
+                if isinstance(seg, Comp.At) and str(seg.qq) != event.get_self_id()
+            ),
+            None
         )
+        if target_id is None:
+            target_id = input_id or event.get_sender_id()
         comp = await self.box(
             event.bot, target_id=str(target_id), group_id=event.get_group_id()
         )
