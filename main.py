@@ -20,14 +20,14 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.1",
+    "1.1.2",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.auto_box: bool = config.get("auto_box", False)
-        self.auto_box_groups: list[str] =config.get("auto_box_groups", [])
+        self.auto_box_groups: list[str] = config.get("auto_box_groups", [])
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """开盒的主流程函数"""
@@ -64,27 +64,24 @@ class Box(Star):
         self, event: AiocqhttpMessageEvent, input_id: int | None = None
     ):
         """/盒@某人 或 /盒 QQ"""
-        client = event.bot
-        messages = event.get_messages()
-        send_id = event.get_sender_id()
-        self_id = event.get_self_id()
-        group_id = event.get_group_id()
-
-        target_id = input_id or next(
+        target_id = next(
             (
                 str(seg.qq)
-                for seg in messages
-                if (isinstance(seg, Comp.At)) and str(seg.qq) != self_id
-            ),
-            send_id,
+                for seg in event.get_messages()
+                if (isinstance(seg, Comp.At)) and str(seg.qq) != event.get_self_id()
+            )
+            or input_id,
+            event.get_sender_id(),
         )
-        comp = await self.box(client, target_id=str(target_id), group_id=group_id)
+        comp = await self.box(
+            event.bot, target_id=str(target_id), group_id=event.get_group_id()
+        )
         yield event.chain_result([comp])  # type: ignore
 
     @filter.platform_adapter_type(PlatformAdapterType.AIOCQHTTP)
     async def handle_group_add(self, event: AiocqhttpMessageEvent):
         """自动开盒新群友"""
-        if not self.auto_box: # 自动开盒开关
+        if not self.auto_box:  # 自动开盒开关
             return
 
         if not hasattr(event, "message_obj") or not hasattr(
@@ -108,7 +105,9 @@ class Box(Star):
                     return
             user_id = raw_message.get("user_id")
             client = event.bot
-            comp = await self.box(client,target_id=str(user_id),group_id=str(group_id))
+            comp = await self.box(
+                client, target_id=str(user_id), group_id=str(group_id)
+            )
             yield event.chain_result([comp])  # type: ignore
 
     def transform(self, info: dict, info2: dict) -> list:
@@ -166,7 +165,7 @@ class Box(Star):
                 reply.append(f"邮编：{postCode}")
 
         if country := info.get("country"):
-                reply.append(f"现居：{country if country != '中国' else ''}")
+            reply.append(f"现居：{country if country != '中国' else ''}")
         if province := info.get("province"):
             reply[-1] += f"{province}"
         if city := info.get("city"):
@@ -260,7 +259,6 @@ class Box(Star):
                 return await response.read()
         except Exception as e:
             logger.error(f"下载头像失败: {e}")
-
 
     @staticmethod
     def get_constellation(month: int, day: int) -> str:
