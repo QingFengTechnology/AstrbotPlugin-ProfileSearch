@@ -20,7 +20,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.2",
+    "1.1.3",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -105,6 +105,9 @@ class Box(Star):
                 if str(group_id) not in self.auto_box_groups:
                     return
             user_id = raw_message.get("user_id")
+            # 屏蔽自身
+            if str(user_id) == event.get_self_id():
+                return
             client = event.bot
             comp = await self.box(
                 client, target_id=str(user_id), group_id=str(group_id)
