@@ -1,5 +1,6 @@
 from datetime import datetime
 from io import BytesIO
+import textwrap
 from typing import Optional
 from PIL import Image
 from aiocqhttp import CQHttp
@@ -20,17 +21,21 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.3",
+    "1.1.4",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.auto_box: bool = config.get("auto_box", False)
+        self.only_admin: bool = config.get("only_admin", False)
         self.auto_box_groups: list[str] = config.get("auto_box_groups", [])
+        self.box_blacklist: list[str] = config.get("box_blacklist", [])
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """开盒的主流程函数"""
+        if target_id in self.box_blacklist:
+            return Comp.Plain("该用户无法被开盒")
         # 获取用户信息
         try:
             stranger_info = await client.get_stranger_info(
@@ -64,13 +69,15 @@ class Box(Star):
         self, event: AiocqhttpMessageEvent, input_id: int | None = None
     ):
         """/盒@某人 或 /盒 QQ"""
+        if self.only_admin and not event.is_admin() and input_id:
+            return
         target_id = next(
             (
                 str(seg.qq)
                 for seg in event.get_messages()
                 if isinstance(seg, Comp.At) and str(seg.qq) != event.get_self_id()
             ),
-            None
+            None,
         )
         if target_id is None:
             target_id = input_id or event.get_sender_id()
@@ -129,6 +136,7 @@ class Box(Star):
         if title := info2.get("title"):
             reply.append(f"头衔：{title}")
 
+        # 状态码已无法正确获取
         # if info.get('status', False) and int(info['status']) != 20:
         # reply.append(f"状态：{get_state(info['uin'])}")
 
@@ -232,12 +240,8 @@ class Box(Star):
             )
 
         if long_nick := info.get("long_nick"):
-            long_nick_lines = [
-                info["long_nick"][i : i + 15] for i in range(0, len(long_nick), 15)
-            ]
-            reply.append(f"签名：{long_nick_lines[0]}")
-            for line in long_nick_lines[1:]:
-                reply.append(line)
+            lines = textwrap.wrap(text="签名：" + long_nick, width=15)
+            reply.extend(lines)
 
         return reply
 
@@ -351,14 +355,12 @@ class Box(Star):
 
     @staticmethod
     def parse_home_town(home_town_code: str) -> str:
-        # 国家代码映射表
+        # 国家代码映射表（懒得查，欢迎提PR补充）
         country_map = {
             "49": "中国",
             "250": "俄罗斯",
             "222": "特里尔",
             "217": "法国",
-            "233": "美国",
-            "322": "美国",
         }
         # 中国省份（包括直辖市）代码映射表，由于不是一一对应，效果不佳
         province_map = {
@@ -379,8 +381,7 @@ class Box(Star):
 
         reply = country
 
-        if country_code == "49" and province_code != "0":  # 解析中国省份
+        if country_code == "49" and province_code != "0":
             province = province_map.get(province_code, f"{province_code}省")
-            # province = f"{province_code}省"
             reply = province
         return reply
