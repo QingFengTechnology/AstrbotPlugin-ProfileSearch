@@ -177,7 +177,7 @@ class Box(Star):
                 reply.append(f"邮编：{postCode}")
 
         if country := info.get("country"):
-            reply.append(f"现居：{country if country != '中国' else ''}")
+            reply.append(f"现居：{country}")
         if province := info.get("province"):
             reply[-1] += f"{province}"
         if city := info.get("city"):
