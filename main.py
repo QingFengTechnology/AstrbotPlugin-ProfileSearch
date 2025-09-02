@@ -21,7 +21,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.4",
+    "1.1.5",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -69,18 +69,24 @@ class Box(Star):
         self, event: AiocqhttpMessageEvent, input_id: int | None = None
     ):
         """/盒@某人 或 /盒 QQ"""
-        if self.only_admin and not event.is_admin() and input_id:
+        if self.only_admin and not event.is_admin():
             return
+        self_id = event.get_self_id()
         target_id = next(
             (
                 str(seg.qq)
                 for seg in event.get_messages()
-                if isinstance(seg, Comp.At) and str(seg.qq) != event.get_self_id()
+                if isinstance(seg, Comp.At) and str(seg.qq) != self_id
             ),
             None,
         )
-        if target_id is None:
-            target_id = input_id or event.get_sender_id()
+        if not target_id:
+            target_id = (
+                input_id
+                if input_id and str(input_id) != self_id
+                else event.get_sender_id()
+            )
+
         comp = await self.box(
             event.bot, target_id=str(target_id), group_id=event.get_group_id()
         )
@@ -379,9 +385,11 @@ class Box(Star):
         country_code, province_code, _ = home_town_code.split("-")
         country = country_map.get(country_code, f"外国{country_code}")
 
-        reply = country
-
-        if country_code == "49" and province_code != "0":
-            province = province_map.get(province_code, f"{province_code}省")
-            reply = province
-        return reply
+        if country_code == "49":  # 中国
+            if province_code != "0":
+                province = province_map.get(province_code, f"{province_code}省")
+                return f"{country}-{province}"
+            else:
+                return country
+        else:
+            return country
