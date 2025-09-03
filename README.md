@@ -1,4 +1,4 @@
-*
+
 <div align="center">
 
 ![:name](https://count.getloli.com/@astrbot_plugin_box?name=astrbot_plugin_box&theme=minecraft&padding=6&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
@@ -68,6 +68,7 @@ git clone https://github.com/Zhalslar/astrbot_plugin_box
 
 ## 📌 注意事项
 
+- 开盒信息在QQ主页也能查看，本插件仅供学习交流，作者不承担任何责任
 - 想第一时间得到反馈的可以来作者的插件反馈群（QQ群）：460973561（不点star不给进）
 
 ## 🚫 免责声明

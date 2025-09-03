@@ -21,7 +21,7 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.5",
+    "1.1.6",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
@@ -71,6 +71,7 @@ class Box(Star):
         """/盒@某人 或 /盒 QQ"""
         if self.only_admin and not event.is_admin():
             return
+
         self_id = event.get_self_id()
         target_id = next(
             (
@@ -86,7 +87,6 @@ class Box(Star):
                 if input_id and str(input_id) != self_id
                 else event.get_sender_id()
             )
-
         comp = await self.box(
             event.bot, target_id=str(target_id), group_id=event.get_group_id()
         )
@@ -94,36 +94,28 @@ class Box(Star):
 
     @filter.platform_adapter_type(PlatformAdapterType.AIOCQHTTP)
     async def handle_group_add(self, event: AiocqhttpMessageEvent):
-        """自动开盒新群友"""
-        if not self.auto_box:  # 自动开盒开关
-            return
-
-        if not hasattr(event, "message_obj") or not hasattr(
-            event.message_obj, "raw_message"
+        """自动开盒新群友/主动退群之人"""
+        raw = getattr(event.message_obj, "raw_message", None)
+        if (
+            isinstance(raw, dict)
+            and raw.get("post_type") == "notice"
+            and raw.get("user_id") != raw.get("self_id")
+            and (
+                raw.get("notice_type") == "group_increase"
+                or (
+                    raw.get("notice_type") == "group_decrease"
+                    and raw.get("sub_type") == "leave"
+                )
+            )
         ):
-            return
-        raw_message = event.message_obj.raw_message
+            group_id = raw.get("group_id")
+            user_id = raw.get("user_id")
 
-        # 处理 raw_message
-        if not raw_message or not isinstance(raw_message, dict):
-            return
-        # 确保是 notice 类型的消息
-        if raw_message.get("post_type") != "notice":
-            return
-        # 群成员增加事件
-        if raw_message.get("notice_type") == "group_increase":
-            # 开盒群聊白名单
-            group_id = raw_message.get("group_id")
-            if self.auto_box_groups:
-                if str(group_id) not in self.auto_box_groups:
-                    return
-            user_id = raw_message.get("user_id")
-            # 屏蔽自身
-            if str(user_id) == event.get_self_id():
+            if self.auto_box_groups and str(group_id) not in self.auto_box_groups:
                 return
-            client = event.bot
+
             comp = await self.box(
-                client, target_id=str(user_id), group_id=str(group_id)
+                event.bot, target_id=str(user_id), group_id=str(group_id)
             )
             yield event.chain_result([comp])  # type: ignore
 
@@ -182,12 +174,15 @@ class Box(Star):
             if postCode != "-":
                 reply.append(f"邮编：{postCode}")
 
-        if country := info.get("country"):
+
+        country = info.get("country")
+        province = info.get("province")
+        city = info.get("city")
+        if country == "中国" and (province or city):
+            reply.append(f"现居：{province or ''}-{city or ''}")
+        elif country:
             reply.append(f"现居：{country}")
-        if province := info.get("province"):
-            reply[-1] += f"{province}"
-        if city := info.get("city"):
-            reply[-1] += f"-{city}"
+
 
         if homeTown := info.get("homeTown"):
             if homeTown != "0-0-0":
@@ -388,8 +383,8 @@ class Box(Star):
         if country_code == "49":  # 中国
             if province_code != "0":
                 province = province_map.get(province_code, f"{province_code}省")
-                return f"{country}-{province}"
+                return province  # 只返回省份名
             else:
-                return country
+                return country  # 没有省份信息，返回国家名
         else:
-            return country
+            return country  # 不是中国，返回国家名

@@ -1,14 +1,18 @@
 {
-    "auto_box": {
-        "description": "是否自动开盒新群友",
+    "increase_box": {
+        "description": "自动开盒新进群的人",
         "type": "bool",
-        "hint": "开启后，新进群的友友会被自动开盒",
+        "default": false
+    },
+    "decrease_box": {
+        "description": "自动开盒主动退群的人",
+        "type": "bool",
         "default": false
     },
     "only_admin":{
         "description": "仅bot管理员可开盒他人",
         "type": "bool",
-        "hint": "普通成员开盒自己不受影响",
+        "hint": "但自己开盒自己不受限制",
         "default": false
     },
     "auto_box_groups": {
