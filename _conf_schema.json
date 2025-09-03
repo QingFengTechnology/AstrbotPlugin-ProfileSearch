@@ -1,4 +1,10 @@
 {
+    "only_admin": {
+        "description": "仅bot管理员可开盒他人",
+        "type": "bool",
+        "hint": "但自己开盒自己不受限制",
+        "default": false
+    },
     "increase_box": {
         "description": "自动开盒新进群的人",
         "type": "bool",
@@ -7,12 +13,6 @@
     "decrease_box": {
         "description": "自动开盒主动退群的人",
         "type": "bool",
-        "default": false
-    },
-    "only_admin":{
-        "description": "仅bot管理员可开盒他人",
-        "type": "bool",
-        "hint": "但自己开盒自己不受限制",
         "default": false
     },
     "auto_box_groups": {
@@ -27,5 +27,4 @@
         "hint": "开盒时，会忽略黑名单中的用户，建议将bot自身QQ号写上",
         "default": []
     }
-    
 }
