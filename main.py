@@ -21,20 +21,17 @@ from astrbot.api.event import filter
     "astrbot_plugin_box",
     "Zhalslar",
     "开盒插件",
-    "1.1.6",
+    "1.1.7",
     "https://github.com/Zhalslar/astrbot_plugin_box",
 )
 class Box(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
-        self.auto_box: bool = config.get("auto_box", False)
-        self.only_admin: bool = config.get("only_admin", False)
-        self.auto_box_groups: list[str] = config.get("auto_box_groups", [])
-        self.box_blacklist: list[str] = config.get("box_blacklist", [])
+        self.conf = config
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """开盒的主流程函数"""
-        if target_id in self.box_blacklist:
+        if target_id in self.conf["box_blacklist"]:
             return Comp.Plain("该用户无法被开盒")
         # 获取用户信息
         try:
@@ -69,7 +66,7 @@ class Box(Star):
         self, event: AiocqhttpMessageEvent, input_id: int | str | None = None
     ):
         """/盒@某人 或 /盒 QQ"""
-        if self.only_admin and not event.is_admin() and input_id:
+        if self.conf["only_admin"] and not event.is_admin() and input_id:
             return
 
         self_id = event.get_self_id()
@@ -101,17 +98,18 @@ class Box(Star):
             and raw.get("post_type") == "notice"
             and raw.get("user_id") != raw.get("self_id")
             and (
-                raw.get("notice_type") == "group_increase"
+                raw.get("notice_type") == "group_increase" and self.conf["increase_box"]
                 or (
                     raw.get("notice_type") == "group_decrease"
                     and raw.get("sub_type") == "leave"
+                    and self.conf["decrease_box"]
                 )
             )
         ):
             group_id = raw.get("group_id")
             user_id = raw.get("user_id")
 
-            if self.auto_box_groups and str(group_id) not in self.auto_box_groups:
+            if self.conf["auto_box_groups"] and str(group_id) not in self.conf["auto_box_groups"]:
                 return
 
             comp = await self.box(
