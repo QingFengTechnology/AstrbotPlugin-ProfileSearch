@@ -66,10 +66,10 @@ class Box(Star):
 
     @filter.command("盒", alias={"开盒"})
     async def on_command(
-        self, event: AiocqhttpMessageEvent, input_id: int | None = None
+        self, event: AiocqhttpMessageEvent, input_id: int | str | None = None
     ):
         """/盒@某人 或 /盒 QQ"""
-        if self.only_admin and not event.is_admin():
+        if self.only_admin and not event.is_admin() and input_id:
             return
 
         self_id = event.get_self_id()
