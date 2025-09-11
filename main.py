@@ -16,14 +16,6 @@ import astrbot.api.message_components as Comp
 from astrbot import logger
 from astrbot.api.event import filter
 
-
-@register(
-    "astrbot_plugin_box",
-    "Zhalslar",
-    "开盒插件",
-    "1.1.7",
-    "https://github.com/Zhalslar/astrbot_plugin_box",
-)
 class Box(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
