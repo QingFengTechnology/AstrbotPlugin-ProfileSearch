@@ -22,16 +22,16 @@ class Box(Star):
         self.conf = config
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
-        """开盒的主流程函数"""
+        """主流程函数"""
         if target_id in self.conf["box_blacklist"]:
-            return Comp.Plain("该用户无法被开盒")
+            return Comp.Plain("资料调用请求被拒绝。")
         # 获取用户信息
         try:
             stranger_info = await client.get_stranger_info(
                 user_id=int(target_id), no_cache=True
             )
         except:  # noqa: E722
-            return Comp.Plain("无效QQ号")
+            return Comp.Plain("无效的QQ号。")
 
         # 获取用户群信息
         try:
@@ -53,11 +53,11 @@ class Box(Star):
         image: bytes = create_image(avatar, reply)
         return Comp.Image.fromBytes(image)
 
-    @filter.command("盒", alias={"开盒"})
+    @filter.command("box")
     async def on_command(
         self, event: AiocqhttpMessageEvent, input_id: int | str | None = None
     ):
-        """/盒@某人 或 /盒 QQ"""
+        """调取目标用户资料"""
         if self.conf["only_admin"] and not event.is_admin() and input_id:
             return
 
@@ -83,7 +83,7 @@ class Box(Star):
 
     @filter.platform_adapter_type(PlatformAdapterType.AIOCQHTTP)
     async def handle_group_add(self, event: AiocqhttpMessageEvent):
-        """自动开盒新群友/主动退群之人"""
+        """自动调取新群友/主动退群用户的资料信息"""
         raw = getattr(event.message_obj, "raw_message", None)
         if (
             isinstance(raw, dict)
@@ -113,7 +113,7 @@ class Box(Star):
         reply = []
 
         if user_id := info.get("user_id"):
-            reply.append(f"Q号：{user_id}")
+            reply.append(f"QQ号：{user_id}")
 
         if nickname := info.get("nickname"):
             reply.append(f"昵称：{nickname}")
@@ -130,9 +130,9 @@ class Box(Star):
 
         sex = info.get("sex")
         if sex == "male":
-            reply.append("性别：男孩纸")
+            reply.append("性别：男")
         elif sex == "female":
-            reply.append("性别：女孩纸")
+            reply.append("性别：女")
 
         if (
             info.get("birthday_year")
@@ -140,7 +140,7 @@ class Box(Star):
             and info.get("birthday_day")
         ):
             reply.append(
-                f"诞辰：{info['birthday_year']}-{info['birthday_month']}-{info['birthday_day']}"
+                f"生日：{info['birthday_month']}-{info['birthday_day']}"
             )
             reply.append(
                 f"星座：{self.get_constellation(int(info['birthday_month']), int(info['birthday_day']))}"
@@ -200,13 +200,13 @@ class Box(Star):
             reply.append("不良记录：有")
 
         if info2.get("is_robot"):
-            reply.append("是否为bot: 是")
+            reply.append("机器人账号: 是")
 
         if info.get("is_vip"):
-            reply.append("VIP：已开")
+            reply.append("QQVIP：已开")
 
         if info.get("is_years_vip"):
-            reply.append("年费VIP：已开")
+            reply.append("年VIP：已开")
 
         if int(info.get("vip_level", 0)) != 0:
             reply.append(f"VIP等级：{info['vip_level']}")
@@ -335,13 +335,13 @@ class Box(Star):
             11: "模特",
             12: "空姐",
             13: "学生",
-            14: "其他职业",
+            14: "其他",
         }
         return career.get(num, f"职业{num}")
 
     @staticmethod
     def get_blood_type(num: int) -> str:
-        blood_types = {1: "A型", 2: "B型", 3: "O型", 4: "AB型", 5: "其他血型"}
+        blood_types = {1: "A型", 2: "B型", 3: "O型", 4: "AB型", 5: "其他"}
         return blood_types.get(num, f"血型{num}")
 
     @staticmethod
