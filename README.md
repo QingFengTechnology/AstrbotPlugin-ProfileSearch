@@ -31,33 +31,42 @@
 
 ```json
 {
-    "only_admin": {
-        "description": "仅bot管理员可开盒他人",
-        "type": "bool",
-        "hint": "但自己开盒自己不受限制",
-        "default": false
+  "only_admin": {
+    "description": "仅管理员可通过命令获取用户信息",
+    "type": "bool",
+    "hint": "自己获取自己的信息不受该限制。",
+    "default": false
+  },
+  "increase_box": {
+    "description": "自动获取新进群的用户信息",
+    "type": "bool",
+    "default": false
+  },
+  "decrease_box": {
+    "description": "自动获取退群用户的信息",
+    "type": "bool",
+    "default": false
+  },
+  "whitelist_groups": {
+    "description": "群聊白名单",
+    "type": "list",
+    "items": {
+      "type": "int"
     },
-    "increase_box": {
-        "description": "自动开盒新进群的人",
-        "type": "bool",
-        "default": false
-    },
-    "decrease_box": {
-        "description": "自动开盒主动退群的人",
-        "type": "bool",
-        "default": false
-    },
-    "auto_box_groups": {
-        "description": "自动开盒群聊白名单",
-        "type": "list",
-        "hint": "只自动开盒白名单群聊的新群友/主动退群的人，不填则默认所有群聊都启用自动开盒",
-        "default": []
-    },
-    "box_blacklist": {
-        "description": "开盒黑名单",
-        "type": "list",
-        "hint": "开盒时，会忽略黑名单中的用户，建议将bot自身QQ号写上",
-        "default": []
-    }
+    "default": [],
+    "hint": "仅处理白名单群聊中的/box命令，留空则处理所有群聊的请求。"
+  },
+  "auto_box_groups": {
+    "description": "自动获取用户信息群聊白名单",
+    "type": "list",
+    "hint": "只自动获取用户信息白名单群聊的新群友/主动退群的用户，不填则所有群聊都启用自动获取用户信息。",
+    "default": []
+  },
+  "box_blacklist": {
+    "description": "用户黑名单",
+    "type": "list",
+    "hint": "处于黑名单中的用户不会被通过/box命令获取到用户信息，这不影响自动获取用户信息。",
+    "default": []
+  }
 }
 ```
