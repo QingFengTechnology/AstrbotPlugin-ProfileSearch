@@ -58,11 +58,35 @@ def create_image(avatar: bytes, reply: list) -> bytes:
     temp_img = Image.new("RGBA", (1, 1))
     temp_draw = ImageDraw.Draw(temp_img)
     no_emoji_reply = "".join("一" if emoji.is_emoji(c) else c for c in reply_str)
-    text_bbox = temp_draw.textbbox((0, 0), no_emoji_reply, font=cute_font)
-    text_width, text_height = (
-        int(text_bbox[2] - text_bbox[0]),
-        int(text_bbox[3] - text_bbox[1]),
-    )
+    
+    # 计算每行文本的高度，更精确地计算整体文本高度
+    lines = no_emoji_reply.split("\n")
+    line_heights = []
+    for line in lines:
+        if line.strip():
+            line_bbox = temp_draw.textbbox((0, 0), line, font=cute_font)
+            line_height = int(line_bbox[3] - line_bbox[1])
+            line_heights.append(line_height)
+        else:
+            # 空行使用默认行高
+            line_heights.append(FONT_SIZE + 5)
+    
+    # 计算整体文本高度，包括行间距
+    text_height = sum(line_heights) + (len(lines) - 1) * 5  # 每行额外5像素的行间距
+    
+    # 增加底部额外边距，确保最后一行文本不会紧贴图片底部
+    text_height += TEXT_PADDING  # 额外增加一个边距
+    
+    # 计算最大文本宽度，增加额外边距确保不超出
+    max_line_width = 0
+    for line in lines:
+        if line.strip():
+            line_bbox = temp_draw.textbbox((0, 0), line, font=cute_font)
+            line_width = int(line_bbox[2] - line_bbox[0])
+            # 增加10像素的额外边距，确保文本不会超出边界
+            max_line_width = max(max_line_width, line_width + 15)
+    
+    text_width = max_line_width
     img_height = text_height + 2 * TEXT_PADDING
     # 调整头像为与文本高度相同的大小，得到图片的宽度
     avatar_img = Image.open(BytesIO(avatar))
@@ -72,7 +96,7 @@ def create_image(avatar: bytes, reply: list) -> bytes:
     # 直接粘贴头像到图片左侧,垂直居中
     img = Image.new("RGBA", (img_width, img_height), color=(255, 255, 255, 255))
     img.paste(avatar_img, (0, (img_height - avatar_size) // 2))
-    # 绘制文本到图片右侧
+    # 绘制文本到图片右侧，确保有足够的底部边距
     _draw_multi(img, reply_str, avatar_img.width + TEXT_PADDING, TEXT_PADDING)
     # 绘制一个随机颜色的边框
     border_color = (38, 38, 38)  # HEX #262626
@@ -108,16 +132,59 @@ def _draw_multi(img, text, text_x=10, text_y=10):
             random.randint(240, 255),
         )
         current_x = text_x
-        for char in line:
-            if char in emoji.EMOJI_DATA:
-                # 使用统一的字体大小计算，确保Emoji和文本对齐
-                draw.text((current_x, current_y), char, font=emoji_font, fill=line_color)
-                # 使用主字体计算bbox以确保一致的间距
-                bbox = cute_font.getbbox("中")  # 使用中文字符作为参考
+        
+        # 跳过空行，但仍然增加行高
+        if not line.strip():
+            current_y += FONT_SIZE + 5
+            continue
+            
+        # 计算当前行的实际高度
+        if 'emoji' in globals():
+            no_emoji_line = "".join("一" if emoji.is_emoji(c) else c for c in line)
+        else:
+            no_emoji_line = line
+        
+        try:
+            # 计算行高
+            bbox = cute_font.getbbox(no_emoji_line)
+            line_height = int(bbox[3] - bbox[1]) if bbox else FONT_SIZE
+            
+            for char in line:
+                if 'emoji' in globals() and char in emoji.EMOJI_DATA:
+                    # 使用统一的字体大小计算，确保Emoji和文本对齐
+                    draw.text((current_x, current_y), char, font=emoji_font, fill=line_color)
+                    # 使用主字体计算bbox以确保一致的间距
+                    char_bbox = cute_font.getbbox("中")  # 使用中文字符作为参考
+                else:
+                    draw.text((current_x, current_y), char, font=cute_font, fill=line_color)
+                    char_bbox = cute_font.getbbox(char)
+                
+                # 检查是否超出图片边界，如果超出则换行
+                char_width = char_bbox[2] - char_bbox[0] if char_bbox else FONT_SIZE // 2
+                if current_x + char_width > img.width - TEXT_PADDING:
+                    # 超出边界，换到下一行
+                    current_x = text_x
+                    current_y += max(line_height, FONT_SIZE) + 5
+                    
+                    # 重新绘制当前字符到新行
+                    if 'emoji' in globals() and char in emoji.EMOJI_DATA:
+                        draw.text((current_x, current_y), char, font=emoji_font, fill=line_color)
+                    else:
+                        draw.text((current_x, current_y), char, font=cute_font, fill=line_color)
+                
+                current_x += char_width
+            
+            # 使用实际行高加一些间距，但确保不会超出图片底部
+            next_y = current_y + max(line_height, FONT_SIZE) + 5
+            # 检查是否会超出图片底部边界
+            if next_y > img.height - TEXT_PADDING:
+                # 如果超出，调整当前行高度以确保有足够的底部边距
+                current_y = img.height - TEXT_PADDING - max(line_height, FONT_SIZE)
             else:
-                draw.text((current_x, current_y), char, font=cute_font, fill=line_color)
-                bbox = cute_font.getbbox(char)
-            current_x += bbox[2] - bbox[0]
-        current_y += FONT_SIZE + 5  # 使用固定的行高，基于字体大小
+                current_y = next_y
+        except Exception as e:
+            # 出现异常时使用默认行高
+            print(f"绘制文本时出错: {e}")
+            current_y += FONT_SIZE + 5
 
     return img
