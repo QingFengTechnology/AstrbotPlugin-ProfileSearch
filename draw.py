@@ -18,8 +18,38 @@ BORDER_THICKNESS = 10  # 边框厚度
 BORDER_COLOR_RANGE = (64, 255)  # 边框颜色范围
 CORNER_RADIUS = 30  # 圆角大小
 
+# 加载主字体
 cute_font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
-emoji_font = ImageFont.truetype(EMOJI_FONT_PATH, FONT_SIZE)
+
+def get_emoji_font(desired_size):
+    """获取适当大小的Emoji字体，确保与主字体大小一致"""
+    try:
+        # 首先尝试直接设置所需大小
+        font = ImageFont.truetype(EMOJI_FONT_PATH, desired_size)
+        print(f"成功加载Emoji字体，大小: {desired_size}")
+        return font
+    except OSError as e:
+        print(f"无法加载指定大小的Emoji字体: {e}")
+        try:
+            # 尝试加载默认字体
+            default_font = ImageFont.truetype(EMOJI_FONT_PATH)
+            print(f"使用默认大小的Emoji字体: {default_font.size}")
+            
+            # 如果默认字体大小与期望大小差异较大，尝试重新加载接近的大小
+            if abs(default_font.size - desired_size) > 5:
+                try:
+                    adjusted_font = ImageFont.truetype(EMOJI_FONT_PATH, desired_size)
+                    return adjusted_font
+                except:
+                    pass
+            return default_font
+        except OSError as e:
+            print(f"无法加载Emoji字体，使用主字体替代: {e}")
+            # 最终fallback到主字体
+            return ImageFont.truetype(FONT_PATH, desired_size)
+
+# 获取Emoji字体
+emoji_font = get_emoji_font(FONT_SIZE)
 
 
 def create_image(avatar: bytes, reply: list) -> bytes:
@@ -90,11 +120,14 @@ def _draw_multi(img, text, text_x=10, text_y=10):
         current_x = text_x
         for char in line:
             if char in emoji.EMOJI_DATA:
-                draw.text((current_x, current_y + 10), char, font=emoji_font,fill=line_color)
-                bbox = emoji_font.getbbox(char)
+                # 使用统一的字体大小计算，确保Emoji和文本对齐
+                draw.text((current_x, current_y), char, font=emoji_font, fill=line_color)
+                # 使用主字体计算bbox以确保一致的间距
+                bbox = cute_font.getbbox("中")  # 使用中文字符作为参考
             else:
                 draw.text((current_x, current_y), char, font=cute_font, fill=line_color)
                 bbox = cute_font.getbbox(char)
             current_x += bbox[2] - bbox[0]
-        current_y += 40
+        current_y += FONT_SIZE + 5  # 使用固定的行高，基于字体大小
+
     return img
