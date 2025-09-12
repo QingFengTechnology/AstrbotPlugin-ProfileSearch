@@ -65,6 +65,7 @@ class Box(Star):
             return
         
         if self.conf["only_admin"] and not event.is_admin() and input_id:
+            yield event.plain_result(f"您(ID: {event.get_sender_id()})的权限不足以使用此指令。通过 /sid 获取 ID 并请管理员添加。")
             return
 
         self_id = event.get_self_id()
