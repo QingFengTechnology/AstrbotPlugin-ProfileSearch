@@ -20,6 +20,11 @@ class Box(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.conf = config
+        
+        # 群聊白名单
+        self.whitelist_groups = [str(g) for g in config.get("whitelist_groups", [])]
+        # 自动开盒群聊白名单
+        self.auto_box_groups = [str(g) for g in config.get("auto_box_groups", [])]
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """主流程函数"""
@@ -60,7 +65,7 @@ class Box(Star):
         """调取目标用户资料"""
         # 检查群聊白名单
         group_id = event.get_group_id()
-        if group_id and self.conf["whitelist_groups"] and int(group_id) not in self.conf["whitelist_groups"]:
+        if group_id and self.whitelist_groups and str(group_id) not in self.whitelist_groups:
             yield event.plain_result(f"当前群聊(ID: {group_id})不在白名单中，请联系管理员添加。")
             return
         
@@ -108,7 +113,8 @@ class Box(Star):
             group_id = raw.get("group_id")
             user_id = raw.get("user_id")
 
-            if self.conf["auto_box_groups"] and str(group_id) not in self.conf["auto_box_groups"]:
+            # 检查自动开盒群聊白名单
+            if self.auto_box_groups and str(group_id) not in self.auto_box_groups:
                 return
 
             comp = await self.box(
