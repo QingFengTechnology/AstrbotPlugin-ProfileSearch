@@ -209,7 +209,7 @@ class Box(Star):
             reply.append("年VIP：已开")
 
         if int(info.get("vip_level", 0)) != 0:
-            reply.append(f"VIP等级：{info['vip_level']}")
+            reply.append(f"VIP等级：{info['vip_level']}级")
 
         if int(info.get("login_days", 0)) != 0:
             reply.append(f"连续登录天数：{info['login_days']}")
@@ -223,7 +223,7 @@ class Box(Star):
             )
 
         if qqLevel := info.get("qqLevel"):
-            reply.append(f"QQ等级：{self.qqLevel_to_icon(int(qqLevel))}")
+            reply.append(f"QQ等级：{int(qqLevel)}级")
 
         if reg_time := info.get("reg_time"):
             reply.append(
@@ -235,18 +235,6 @@ class Box(Star):
             reply.extend(lines)
 
         return reply
-
-    @staticmethod
-    def qqLevel_to_icon(level: int) -> str:
-        icons = ["👑", "🌞", "🌙", "⭐"]
-        levels = [64, 16, 4, 1]
-        result = ""
-        original_level = level
-        for icon, lvl in zip(icons, levels):
-            count, level = divmod(level, lvl)
-            result += icon * count
-        result += f"({original_level})"
-        return result
 
     @staticmethod
     async def get_avatar(user_id: str) -> bytes | None:
@@ -297,18 +285,18 @@ class Box(Star):
         # 2024年是龙年，以此为基准
         base_year = 2024
         zodiacs = [
-            "龙🐉",
-            "蛇🐍",
-            "马🐎",
-            "羊🐏",
-            "猴🐒",
-            "鸡🐔",
-            "狗🐕",
-            "猪🐖",
-            "鼠🐀",
-            "牛🐂",
-            "虎🐅",
-            "兔🐇",
+            "龙",
+            "蛇",
+            "马",
+            "羊",
+            "猴",
+            "鸡",
+            "狗",
+            "猪",
+            "鼠",
+            "牛",
+            "虎",
+            "兔",
         ]
         # 如果输入的日期在2月4日之前，生肖年份应该是上一年
         if (month == 1) or (month == 2 and day < 4):
