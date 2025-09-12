@@ -8,8 +8,8 @@ import emoji
 
 
 RESOURCE_DIR: Path = Path(__file__).resolve().parent / "Asset"
-FONT_PATH: Path = RESOURCE_DIR / "HarmonyOS_Sans.ttf"
-EMOJI_FONT_PATH: Path = RESOURCE_DIR / "NotoColorEmoji.ttf"
+FONT_PATH: Path = RESOURCE_DIR / "HarmonyOSSans.ttf"
+EMOJI_FONT_PATH: Path = RESOURCE_DIR / "SegoeUIEmoji.ttf"
 
 FONT_SIZE = 35  # 字体大小
 TEXT_PADDING = 10  # 文本与边框的间距
