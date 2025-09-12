@@ -58,6 +58,12 @@ class Box(Star):
         self, event: AiocqhttpMessageEvent, input_id: int | str | None = None
     ):
         """调取目标用户资料"""
+        # 检查群聊白名单
+        group_id = event.get_group_id()
+        if group_id and self.conf["whitelist_groups"] and int(group_id) not in self.conf["whitelist_groups"]:
+            yield event.plain_result(f"当前群聊(ID: {group_id})不在白名单中，请联系管理员添加。")
+            return
+        
         if self.conf["only_admin"] and not event.is_admin() and input_id:
             return
 

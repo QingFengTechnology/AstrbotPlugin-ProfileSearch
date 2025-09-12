@@ -21,6 +21,15 @@
         "hint": "只自动开盒白名单群聊的新群友/主动退群的人，不填则默认所有群聊都启用自动开盒",
         "default": []
     },
+    "whitelist_groups": {
+        "description": "群聊白名单",
+        "type": "list",
+        "items": {
+            "type": "int"
+        },
+        "default": [],
+        "hint": "仅处理白名单群聊中发来的消息。留空则处理所有群聊的消息。"
+    },
     "box_blacklist": {
         "description": "开盒黑名单",
         "type": "list",
