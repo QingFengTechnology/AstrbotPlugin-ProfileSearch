@@ -69,23 +69,13 @@ def create_image(avatar: bytes, reply: list) -> bytes:
     avatar_size = AVATAR_SIZE if AVATAR_SIZE else text_height
     avatar_img = avatar_img.resize((avatar_size, avatar_size))
     img_width = avatar_img.width + text_width + 2 * TEXT_PADDING
-    # 头像圆角后粘贴到图片左侧,垂直居中
+    # 直接粘贴头像到图片左侧,垂直居中
     img = Image.new("RGBA", (img_width, img_height), color=(255, 255, 255, 255))
-    mask = Image.new("L", (avatar_size, avatar_size), 0)
-    draw = ImageDraw.Draw(mask)
-    draw.rounded_rectangle(
-        [(0, 0), (avatar_size, avatar_size)], CORNER_RADIUS, fill=255
-    )
-    avatar_img.putalpha(mask)
-    img.paste(avatar_img, (0, (img_height - avatar_size) // 2), mask)
+    img.paste(avatar_img, (0, (img_height - avatar_size) // 2))
     # 绘制文本到图片右侧
     _draw_multi(img, reply_str, avatar_img.width + TEXT_PADDING, TEXT_PADDING)
     # 绘制一个随机颜色的边框
-    border_color = (
-        random.randint(*BORDER_COLOR_RANGE),
-        random.randint(*BORDER_COLOR_RANGE),
-        random.randint(*BORDER_COLOR_RANGE),
-    )
+    border_color = (38, 38, 38)  # HEX #262626
     border_img = Image.new(
         mode="RGBA",
         size=(img_width + BORDER_THICKNESS * 2, img_height + BORDER_THICKNESS * 2),
