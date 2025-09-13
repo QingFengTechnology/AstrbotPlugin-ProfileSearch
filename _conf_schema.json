@@ -35,5 +35,29 @@
     "type": "list",
     "hint": "处于黑名单中的用户不会被通过/box命令获取到用户信息，这不影响自动获取用户信息。",
     "default": []
+  },
+  "rate_limit_minutes": {
+    "description": "速率限制频率（分钟）",
+    "type": "int",
+    "hint": "同一用户两次使用/box命令的最小间隔时间（分钟），设置为0表示不限制",
+    "default": 0
+  },
+  "rate_limit_whitelist_groups": {
+    "description": "速率限制群聊白名单",
+    "type": "list",
+    "items": {
+      "type": "int"
+    },
+    "hint": "白名单群聊中的用户不受速率限制",
+    "default": []
+  },
+  "rate_limit_whitelist_users": {
+    "description": "速率限制用户白名单",
+    "type": "list",
+    "items": {
+      "type": "int"
+    },
+    "hint": "白名单用户在任何群聊中都不受速率限制",
+    "default": []
   }
 }

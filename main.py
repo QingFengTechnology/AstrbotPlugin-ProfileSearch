@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 import textwrap
-from typing import Optional
+from typing import Optional, Dict
 from PIL import Image
 from aiocqhttp import CQHttp
 import aiohttp
@@ -25,6 +25,44 @@ class Box(Star):
         self.whitelist_groups = [str(g) for g in config.get("whitelist_groups", [])]
         # 自动开盒群聊白名单
         self.auto_box_groups = [str(g) for g in config.get("auto_box_groups", [])]
+        
+        # 速率限制相关配置
+        self.rate_limit_minutes = config.get("rate_limit_minutes", 0)
+        self.rate_limit_whitelist_groups = [str(g) for g in config.get("rate_limit_whitelist_groups", [])]
+        self.rate_limit_whitelist_users = [str(u) for u in config.get("rate_limit_whitelist_users", [])]
+        
+        # 存储用户最后一次使用命令的时间
+        self.last_command_time: Dict[str, datetime] = {}
+
+    def check_rate_limit(self, user_id: str, group_id: str) -> Optional[str]:
+        """检查速率限制，返回None表示通过，返回字符串表示限制消息"""
+        # 如果速率为0，表示不限制
+        if self.rate_limit_minutes <= 0:
+            return None
+            
+        # 检查用户是否在白名单中
+        if str(user_id) in self.rate_limit_whitelist_users:
+            return None
+            
+        # 检查群聊是否在白名单中
+        if group_id and str(group_id) in self.rate_limit_whitelist_groups:
+            return None
+            
+        # 检查速率限制
+        user_key = f"{user_id}_{group_id}"
+        current_time = datetime.now()
+        
+        if user_key in self.last_command_time:
+            last_time = self.last_command_time[user_key]
+            time_diff = current_time - last_time
+            
+            if time_diff < timedelta(minutes=self.rate_limit_minutes):
+                remaining_minutes = self.rate_limit_minutes - time_diff.total_seconds() / 60
+                return f"请求过于频繁，请等待 {int(remaining_minutes)} 分钟后再试。"
+        
+        # 更新最后使用时间
+        self.last_command_time[user_key] = current_time
+        return None
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """主流程函数"""
@@ -67,6 +105,13 @@ class Box(Star):
         group_id = event.get_group_id()
         if group_id and self.whitelist_groups and str(group_id) not in self.whitelist_groups:
             yield event.plain_result(f"当前群聊(ID: {group_id})不在白名单中，请联系管理员添加。")
+            return
+        
+        # 检查速率限制
+        user_id = event.get_sender_id()
+        rate_limit_msg = self.check_rate_limit(user_id, group_id)
+        if rate_limit_msg:
+            yield event.plain_result(rate_limit_msg)
             return
         
         if self.conf["only_admin"] and not event.is_admin() and input_id:
