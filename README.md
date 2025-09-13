@@ -70,3 +70,7 @@
   }
 }
 ```
+
+## 鸣谢
+
+- [Zhalslar](https://github.com/Zhalslar)，此插件为[其仓库](https://github.com/Zhalslar/astrbot_plugin_box)的分叉版本。
