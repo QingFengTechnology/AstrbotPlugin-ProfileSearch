@@ -1,7 +1,7 @@
 import io
 import random
 from pathlib import Path
-from venv import logger
+from astrbot import logger
 
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
