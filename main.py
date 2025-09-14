@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from io import BytesIO
 import textwrap
+import math
 from typing import Optional, Dict
 from PIL import Image
 from aiocqhttp import CQHttp
@@ -56,7 +57,7 @@ class ProfileSearch(Star):
             
             if time_diff < timedelta(minutes=self.rate_limit_minutes):
                 remaining_minutes = self.rate_limit_minutes - time_diff.total_seconds() / 60
-                return f"请求过于频繁，请等待 {int(remaining_minutes)} 分钟后再试。"
+                return f"请求过于频繁，请等待 {math.ceil(remaining_minutes)} 分钟后再试。"
         
         # 更新最后使用时间
         self.last_command_time[user_key] = current_time
