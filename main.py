@@ -16,14 +16,12 @@ import astrbot.api.message_components as Comp
 from astrbot import logger
 from astrbot.api.event import filter
 
-class Box(Star):
+class ProfileSearch(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.conf = config
         
-        # 群聊白名单
         self.whitelist_groups = [str(g) for g in config.get("whitelist_groups", [])]
-        # 自动开盒群聊白名单
         self.auto_box_groups = [str(g) for g in config.get("auto_box_groups", [])]
         
         # 速率限制相关配置
@@ -67,6 +65,7 @@ class Box(Star):
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """主流程函数"""
         if target_id in self.conf["box_blacklist"]:
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 处于黑名单，拒绝资料调用请求。")
             return Comp.Plain("资料调用请求被拒绝。")
         # 获取用户信息
         try:
@@ -74,6 +73,7 @@ class Box(Star):
                 user_id=int(target_id), no_cache=True
             )
         except:  # noqa: E722
+            logger.error(f"[ProfileSearch] 目标 {target_id} 无效，拒绝资料调用请求。")
             return Comp.Plain("无效的QQ号。")
 
         # 获取用户群信息
@@ -88,6 +88,7 @@ class Box(Star):
         avatar: Optional[bytes] = await self.get_avatar(str(target_id))
         # 如果获取头像失败，使用默认白图
         if not avatar:
+            logger.warning(f"[ProfileSearch] 目标 {target_id} 头像获取失败，使用默认白图。")
             with BytesIO() as buffer:
                 Image.new("RGB", (640, 640), (255, 255, 255)).save(buffer, format="PNG")
                 avatar = buffer.getvalue()
@@ -104,6 +105,7 @@ class Box(Star):
         # 检查群聊白名单
         group_id = event.get_group_id()
         if group_id and self.whitelist_groups and str(group_id) not in self.whitelist_groups:
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 所在群聊 {group_id} 不在白名单中，拒绝资料调用请求。")
             yield event.plain_result(f"当前群聊(ID: {group_id})不在白名单中，请联系管理员添加。")
             return
         
@@ -111,10 +113,12 @@ class Box(Star):
         user_id = event.get_sender_id()
         rate_limit_msg = self.check_rate_limit(user_id, group_id)
         if rate_limit_msg:
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 触发速率限制，拒绝资料调用请求。")
             yield event.plain_result(rate_limit_msg)
             return
         
         if self.conf["only_admin"] and not event.is_admin() and input_id:
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 非管理员，拒绝资料调用请求。")
             yield event.plain_result(f"您(ID: {event.get_sender_id()})的权限不足以使用此指令。通过 /sid 获取 ID 并请管理员添加。")
             return
 
@@ -160,6 +164,7 @@ class Box(Star):
 
             # 检查自动开盒群聊白名单
             if self.auto_box_groups and str(group_id) not in self.auto_box_groups:
+                logger.info(f"[ProfileSearch] 自动调取目标 {user_id} 所在群聊 {group_id} 不在白名单中，取消资料调用请求。")
                 return
 
             comp = await self.box(
@@ -303,7 +308,7 @@ class Box(Star):
                 response.raise_for_status()
                 return await response.read()
         except Exception as e:
-            logger.error(f"下载头像失败: {e}")
+            logger.error(f"[ProfileSearch] 未能获取目标头像: {e}")
 
     @staticmethod
     def get_constellation(month: int, day: int) -> str:

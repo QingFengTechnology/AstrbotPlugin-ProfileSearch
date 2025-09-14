@@ -1,6 +1,7 @@
 import io
 import random
 from pathlib import Path
+from venv import logger
 
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
@@ -26,14 +27,14 @@ def get_emoji_font(desired_size):
     try:
         # 首先尝试直接设置所需大小
         font = ImageFont.truetype(EMOJI_FONT_PATH, desired_size)
-        print(f"成功加载Emoji字体，大小: {desired_size}")
+        logger.debug(f"[ProfileSearch] 成功加载Emoji字体，大小: {desired_size}")
         return font
     except OSError as e:
-        print(f"无法加载指定大小的Emoji字体: {e}")
+        logger.error(f"[ProfileSearch] 无法加载指定大小的Emoji字体: {e}")
         try:
             # 尝试加载默认字体
             default_font = ImageFont.truetype(EMOJI_FONT_PATH)
-            print(f"使用默认大小的Emoji字体: {default_font.size}")
+            logger.debug(f"[ProfileSearch] 使用默认大小的Emoji字体: {default_font.size}")
             
             # 如果默认字体大小与期望大小差异较大，尝试重新加载接近的大小
             if abs(default_font.size - desired_size) > 5:
@@ -44,7 +45,7 @@ def get_emoji_font(desired_size):
                     pass
             return default_font
         except OSError as e:
-            print(f"无法加载Emoji字体，使用主字体替代: {e}")
+            logger.error(f"[ProfileSearch] 无法加载Emoji字体，使用主字体替代: {e}")
             # 最终fallback到主字体
             return ImageFont.truetype(FONT_PATH, desired_size)
 
@@ -184,7 +185,7 @@ def _draw_multi(img, text, text_x=10, text_y=10):
                 current_y = next_y
         except Exception as e:
             # 出现异常时使用默认行高
-            print(f"绘制文本时出错: {e}")
+            logger.error(f"[ProfileSearch] 绘制文本时出错: {e}")
             current_y += FONT_SIZE + 5
 
     return img
