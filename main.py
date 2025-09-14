@@ -13,7 +13,7 @@ from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
 from astrbot.core.star.filter.platform_adapter_type import PlatformAdapterType
 from .draw import create_image
 import astrbot.api.message_components as Comp
-from astrbot import logger
+from astrbot.api import logger
 from astrbot.api.event import filter
 
 class ProfileSearch(Star):
