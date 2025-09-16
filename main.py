@@ -100,29 +100,27 @@ class ProfileSearch(Star):
 
     @filter.command("box")
     async def on_command(
-        self, event: AiocqhttpMessageEvent, input_id: str | None = None
+        self, event: AiocqhttpMessageEvent, input_id: int | str | None = None
     ):
         """调取目标用户资料"""
-        # 获取用户和群ID
-        group_id = event.get_group_id()
-        user_id = event.get_sender_id()
-        
         # 检查群聊白名单
+        group_id = event.get_group_id()
         if group_id and self.whitelist_groups and str(group_id) not in self.whitelist_groups:
-            logger.info(f"[ProfileSearch] 用户 {user_id} 在群 {group_id} 尝试调取资料，但群不在白名单中，拒绝请求。")
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 所在群聊 {group_id} 不在白名单中，拒绝资料调用请求。")
             yield event.plain_result(f"当前群聊(ID: {group_id})不在白名单中，请联系管理员添加。")
             return
         
         # 检查速率限制
+        user_id = event.get_sender_id()
         rate_limit_msg = self.check_rate_limit(user_id, group_id)
         if rate_limit_msg:
-            logger.info(f"[ProfileSearch] 用户 {user_id} 在群 {group_id} 触发速率限制，拒绝请求。")
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 触发速率限制，拒绝资料调用请求。")
             yield event.plain_result(rate_limit_msg)
             return
         
         if self.conf["only_admin"] and not event.is_admin() and input_id:
-            logger.info(f"[ProfileSearch] 用户 {user_id} 非管理员，拒绝资料调用请求。")
-            yield event.plain_result(f"您(ID: {user_id})的权限不足以使用此指令。通过 /sid 获取 ID 并请管理员添加。")
+            logger.info(f"[ProfileSearch] 调取目标 {target_id} 非管理员，拒绝资料调用请求。")
+            yield event.plain_result(f"您(ID: {event.get_sender_id()})的权限不足以使用此指令。通过 /sid 获取 ID 并请管理员添加。")
             return
 
         self_id = event.get_self_id()
@@ -138,7 +136,7 @@ class ProfileSearch(Star):
             target_id = (
                 input_id
                 if input_id and str(input_id) != self_id
-                else user_id
+                else event.get_sender_id()
             )
         comp = await self.box(
             event.bot, target_id=str(target_id), group_id=event.get_group_id()
