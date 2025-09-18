@@ -103,6 +103,23 @@ class ProfileSearch(Star):
         self, event: AiocqhttpMessageEvent, input_id: int | str | None = None
     ):
         """调取目标用户资料"""
+        # 提前定义 target_id 变量以避免作用域问题
+        self_id = event.get_self_id()
+        target_id = next(
+            (
+                str(seg.qq)
+                for seg in event.get_messages()
+                if isinstance(seg, Comp.At) and str(seg.qq) != self_id
+            ),
+            None,
+        )
+        if not target_id:
+            target_id = (
+                input_id
+                if input_id and str(input_id) != self_id
+                else event.get_sender_id()
+            )
+            
         # 检查群聊白名单
         group_id = event.get_group_id()
         if group_id and self.whitelist_groups and str(group_id) not in self.whitelist_groups:
@@ -122,22 +139,6 @@ class ProfileSearch(Star):
             logger.info(f"[ProfileSearch] 调取目标 {target_id} 非管理员，拒绝资料调用请求。")
             yield event.plain_result(f"您(ID: {event.get_sender_id()})的权限不足以使用此指令。通过 /sid 获取 ID 并请管理员添加。")
             return
-
-        self_id = event.get_self_id()
-        target_id = next(
-            (
-                str(seg.qq)
-                for seg in event.get_messages()
-                if isinstance(seg, Comp.At) and str(seg.qq) != self_id
-            ),
-            None,
-        )
-        if not target_id:
-            target_id = (
-                input_id
-                if input_id and str(input_id) != self_id
-                else event.get_sender_id()
-            )
         comp = await self.box(
             event.bot, target_id=str(target_id), group_id=event.get_group_id()
         )
