@@ -22,13 +22,17 @@ class ProfileSearch(Star):
         super().__init__(context)
         self.conf = config
         
-        self.whitelist_groups = [str(g) for g in config.get("whitelist_groups", [])]
-        self.auto_box_groups = [str(g) for g in config.get("auto_box_groups", [])]
+        self.whitelist_groups = [str(g) for g in config.get("WhitelistGroups", [])]
+        
+        # 自动获取配置
+        auto_box_config = config.get("AutoBoxConfig", {})
+        self.auto_box_groups = [str(g) for g in auto_box_config.get("AutoBoxConfig_WhiteGroups", [])]
         
         # 速率限制相关配置
-        self.rate_limit_minutes = config.get("rate_limit_minutes", 0)
-        self.rate_limit_whitelist_groups = [str(g) for g in config.get("rate_limit_whitelist_groups", [])]
-        self.rate_limit_whitelist_users = [str(u) for u in config.get("rate_limit_whitelist_users", [])]
+        rate_limit_config = config.get("RateLimitConfig", {})
+        self.rate_limit_minutes = rate_limit_config.get("RateLimitConfig_Time", 0)
+        self.rate_limit_whitelist_groups = [str(g) for g in rate_limit_config.get("RateLimitConfig_WhiteGroups", [])]
+        self.rate_limit_whitelist_users = [str(u) for u in rate_limit_config.get("RateLimitConfig_WhiteUsers", [])]
         
         # 存储用户最后一次使用命令的时间
         self.last_command_time: Dict[str, datetime] = {}
@@ -65,7 +69,7 @@ class ProfileSearch(Star):
 
     async def box(self, client: CQHttp, target_id: str, group_id: str):
         """主流程函数"""
-        if target_id in self.conf["box_blacklist"]:
+        if target_id in self.conf["BoxBlacklist"]:
             logger.info(f"[ProfileSearch] 调取目标 {target_id} 处于黑名单，拒绝资料调用请求。")
             return Comp.Plain("资料调用请求被拒绝。")
         # 获取用户信息
@@ -135,7 +139,7 @@ class ProfileSearch(Star):
             yield event.plain_result(rate_limit_msg)
             return
         
-        if self.conf["only_admin"] and not event.is_admin() and input_id:
+        if self.conf["OnlyAdmin"] and not event.is_admin() and input_id:
             logger.info(f"[ProfileSearch] 调取目标 {target_id} 非管理员，拒绝资料调用请求。")
             yield event.plain_result(f"您(ID: {event.get_sender_id()})的权限不足以使用此指令。通过 /sid 获取 ID 并请管理员添加。")
             return
@@ -153,11 +157,11 @@ class ProfileSearch(Star):
             and raw.get("post_type") == "notice"
             and raw.get("user_id") != raw.get("self_id")
             and (
-                raw.get("notice_type") == "group_increase" and self.conf["increase_box"]
+                raw.get("notice_type") == "group_increase" and self.conf["AutoBoxConfig"].get("AutoBoxConfig_IncreaseBox", False)
                 or (
                     raw.get("notice_type") == "group_decrease"
                     and raw.get("sub_type") == "leave"
-                    and self.conf["decrease_box"]
+                    and self.conf["AutoBoxConfig"].get("AutoBoxConfig_DecreaseBox", False)
                 )
             )
         ):

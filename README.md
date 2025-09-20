@@ -31,42 +31,69 @@
 
 ```json
 {
-  "only_admin": {
+  "OnlyAdmin": {
     "description": "仅管理员可通过命令获取用户信息",
-    "type": "bool",
+    "type": "bool", 
     "hint": "自己获取自己的信息不受该限制。",
     "default": false
   },
-  "increase_box": {
-    "description": "自动获取新进群的用户信息",
-    "type": "bool",
-    "default": false
-  },
-  "decrease_box": {
-    "description": "自动获取退群用户的信息",
-    "type": "bool",
-    "default": false
-  },
-  "whitelist_groups": {
-    "description": "群聊白名单",
-    "type": "list",
-    "items": {
-      "type": "int"
-    },
-    "default": [],
-    "hint": "仅处理白名单群聊中的/box命令，留空则处理所有群聊的请求。"
-  },
-  "auto_box_groups": {
-    "description": "自动获取用户信息群聊白名单",
-    "type": "list",
-    "hint": "只自动获取用户信息白名单群聊的新群友/主动退群的用户，不填则所有群聊都启用自动获取用户信息。",
-    "default": []
-  },
-  "box_blacklist": {
+  "BoxBlacklist": {
     "description": "用户黑名单",
     "type": "list",
     "hint": "处于黑名单中的用户不会被通过/box命令获取到用户信息，这不影响自动获取用户信息。",
     "default": []
+  },
+  "WhitelistGroups": {
+    "description": "群聊白名单",
+    "type": "list",
+    "default": [],
+    "hint": "仅处理白名单群聊中的/box命令，留空则处理所有群聊的请求。"
+  },
+  "AutoBoxConfig": {
+    "description": "自动获取配置",
+    "type": "object",
+    "items": {
+      "AutoBoxConfig_IncreaseBox": {
+        "description": "自动获取新进群的用户信息",
+        "type": "bool",
+        "default": false
+      },
+      "AutoBoxConfig_DecreaseBox": {
+        "description": "自动获取退群用户的信息", 
+        "type": "bool",
+        "default": false
+      },
+      "AutoBoxConfig_WhiteGroups": {
+        "description": "自动获取用户信息群聊白名单",
+        "type": "list",
+        "hint": "只自动获取用户信息白名单群聊的新群友/主动退群的用户，不填则所有群聊都启用自动获取用户信息。",
+        "default": []
+      }
+    }
+  },
+  "RateLimitConfig": {
+    "type": "object",
+    "description": "速率限制配置",
+    "items": {
+      "RateLimitConfig_Time": {
+        "description": "速率限制时间",
+        "type": "int",
+        "hint": "使用命令的最小间隔时间，单位为分钟，设为0表示不限制。",
+        "default": 0
+      },
+      "RateLimitConfig_WhiteGroups": {
+        "description": "群聊白名单",
+        "type": "list",
+        "hint": "白名单群聊不受速率限制。",
+        "default": []
+      },
+      "RateLimitConfig_WhiteUsers": {
+        "description": "用户白名单",
+        "type": "list",
+        "hint": "白名单用户在任何群聊中都不受速率限制。",
+        "default": []
+      }
+    }
   }
 }
 ```
