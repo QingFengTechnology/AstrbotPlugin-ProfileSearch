@@ -192,11 +192,7 @@ class ProfileSearch(Star):
 
         if title := info2.get("title"):
             reply.append(f"头衔：{title}")
-
-        # 状态码已无法正确获取
-        # if info.get('status', False) and int(info['status']) != 20:
-        # reply.append(f"状态：{get_state(info['uin'])}")
-
+            
         sex = info.get("sex")
         if sex == "male":
             reply.append("性别：男")
