@@ -78,7 +78,7 @@ class ProfileSearch(Star):
                 user_id=int(target_id), no_cache=True
             )
         except:  # noqa: E722
-            logger.error(f"[ProfileSearch] 目标 {target_id} 无效，拒绝资料调用请求。")
+            logger.info(f"[ProfileSearch] 目标 {target_id} 无效，拒绝资料调用请求。")
             return Comp.Plain("无效的QQ号。")
 
         # 获取用户群信息
