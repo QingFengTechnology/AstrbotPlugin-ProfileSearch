@@ -34,6 +34,9 @@ class ProfileSearch(Star):
         self.rate_limit_whitelist_groups = [str(g) for g in rate_limit_config.get("RateLimitConfig_WhiteGroups", [])]
         self.rate_limit_whitelist_users = [str(u) for u in rate_limit_config.get("RateLimitConfig_WhiteUsers", [])]
         
+        # 显示配置
+        self.display_config = config.get("DisplayConfig", {})
+        
         # 存储用户最后一次使用命令的时间
         self.last_command_time: Dict[str, datetime] = {}
 
@@ -180,6 +183,7 @@ class ProfileSearch(Star):
 
     def transform(self, info: dict, info2: dict) -> list:
         reply = []
+        display_config = self.display_config
 
         if user_id := info.get("user_id"):
             reply.append(f"QQ号：{user_id}")
@@ -187,117 +191,163 @@ class ProfileSearch(Star):
         if nickname := info.get("nickname"):
             reply.append(f"昵称：{nickname}")
 
-        if card := info2.get("card"):
-            reply.append(f"群昵称：{card}")
+        # 群昵称显示控制
+        if display_config.get("DisplayConfig_Card", True):
+            if card := info2.get("card"):
+                reply.append(f"群昵称：{card}")
 
-        if title := info2.get("title"):
-            reply.append(f"头衔：{title}")
+        # 群头衔显示控制
+        if display_config.get("DisplayConfig_Title", True):
+            if title := info2.get("title"):
+                reply.append(f"头衔：{title}")
             
-        sex = info.get("sex")
-        if sex == "male":
-            reply.append("性别：男")
-        elif sex == "female":
-            reply.append("性别：女")
+        # 性别显示控制
+        if display_config.get("DisplayConfig_Sex", True):
+            sex = info.get("sex")
+            if sex == "male":
+                reply.append("性别：男")
+            elif sex == "female":
+                reply.append("性别：女")
 
-        if (
-            info.get("birthday_year")
-            and info.get("birthday_month")
-            and info.get("birthday_day")
-        ):
-            reply.append(
-                f"生日：{info['birthday_month']}-{info['birthday_day']}"
-            )
-            reply.append(
-                f"星座：{self.get_constellation(int(info['birthday_month']), int(info['birthday_day']))}"
-            )
-            reply.append(
-                f"生肖：{self.get_zodiac(int(info['birthday_year']), int(info['birthday_month']), int(info['birthday_day']))}"
-            )
+        # 生日相关显示控制
+        birthday_config = display_config.get("DisplayConfig_BirthdayConfig", {})
+        show_birthday = birthday_config.get("BirthdayConfig_Enable", True)
+        show_constellation = birthday_config.get("BirthdayConfig_Constellation", True)
+        show_zodiac = birthday_config.get("BirthdayConfig_Zodiac", True)
+        
+        if show_birthday and info.get("birthday_year") and info.get("birthday_month") and info.get("birthday_day"):
+            reply.append(f"生日：{info['birthday_month']}-{info['birthday_day']}")
+            
+            if show_constellation:
+                reply.append(f"星座：{self.get_constellation(int(info['birthday_month']), int(info['birthday_day']))}")
+            
+            if show_zodiac:
+                reply.append(f"生肖：{self.get_zodiac(int(info['birthday_year']), int(info['birthday_month']), int(info['birthday_day']))}")
 
-        if age := info.get("age"):
-            reply.append(f"年龄：{age}岁")
+        # 年龄显示控制
+        if display_config.get("DisplayConfig_Age", True):
+            if age := info.get("age"):
+                reply.append(f"年龄：{age}岁")
 
-        if phoneNum := info.get("phoneNum"):
-            if phoneNum != "-":
-                reply.append(f"电话：{phoneNum}")
+        # 手机号码显示控制
+        if display_config.get("DisplayConfig_PhoneNum", True):
+            if phoneNum := info.get("phoneNum"):
+                if phoneNum != "-":
+                    reply.append(f"电话：{phoneNum}")
 
-        if eMail := info.get("eMail", False):
-            if eMail != "-":
-                reply.append(f"邮箱：{eMail}")
+        # 邮箱显示控制
+        if display_config.get("DisplayConfig_Email", True):
+            if eMail := info.get("eMail", False):
+                if eMail != "-":
+                    reply.append(f"邮箱：{eMail}")
 
-        if postCode := info.get("postCode", False):
-            if postCode != "-":
-                reply.append(f"邮编：{postCode}")
+        # 邮编显示控制
+        if display_config.get("DisplayConfig_PostCode", True):
+            if postCode := info.get("postCode", False):
+                if postCode != "-":
+                    reply.append(f"邮编：{postCode}")
 
+        # 现居地显示控制
+        if display_config.get("DisplayConfig_Address", True):
+            country = info.get("country")
+            province = info.get("province")
+            city = info.get("city")
+            if country == "中国" and (province or city):
+                reply.append(f"现居：{province or ''}-{city or ''}")
+            elif country:
+                reply.append(f"现居：{country}")
 
-        country = info.get("country")
-        province = info.get("province")
-        city = info.get("city")
-        if country == "中国" and (province or city):
-            reply.append(f"现居：{province or ''}-{city or ''}")
-        elif country:
-            reply.append(f"现居：{country}")
+        # 家乡显示控制
+        if display_config.get("DisplayConfig_HomeTown", True):
+            if homeTown := info.get("homeTown"):
+                if homeTown != "0-0-0":
+                    reply.append(f"来自：{self.parse_home_town(homeTown)}")
 
+        # 地址显示控制
+        if display_config.get("DisplayConfig_Address", True):
+            if address := info.get("address", False):
+                if address != "-":
+                    reply.append(f"地址：{address}")
 
-        if homeTown := info.get("homeTown"):
-            if homeTown != "0-0-0":
-                reply.append(f"来自：{self.parse_home_town(homeTown)}")
+        # 血型显示控制
+        if display_config.get("DisplayConfig_BloodType", True):
+            if kBloodType := info.get("kBloodType"):
+                reply.append(f"血型：{self.get_blood_type(int(kBloodType))}")
 
-        if address := info.get("address", False):
-            if address != "-":
-                reply.append(f"地址：{address}")
+        # 职业显示控制
+        if display_config.get("DisplayConfig_Career", True):
+            if (
+                makeFriendCareer := info.get("makeFriendCareer")
+            ) and makeFriendCareer != "0":
+                reply.append(f"职业：{self.get_career(int(makeFriendCareer))}")
 
-        if kBloodType := info.get("kBloodType"):
-            reply.append(f"血型：{self.get_blood_type(int(kBloodType))}")
+        # 备注显示控制
+        if display_config.get("DisplayConfig_Remark", True):
+            if remark := info.get("remark"):
+                reply.append(f"备注：{remark}")
 
-        if (
-            makeFriendCareer := info.get("makeFriendCareer")
-        ) and makeFriendCareer != "0":
-            reply.append(f"职业：{self.get_career(int(makeFriendCareer))}")
+        # 标签显示控制
+        if display_config.get("DisplayConfig_Labels", True):
+            if labels := info.get("labels"):
+                reply.append(f"标签：{labels}")
 
-        if remark := info.get("remark"):
-            reply.append(f"备注：{remark}")
+        # 风险账号显示控制
+        if display_config.get("DisplayConfig_Unfriendly", True):
+            if info2.get("unfriendly"):
+                reply.append("不良记录：有")
 
-        if labels := info.get("labels"):
-            reply.append(f"标签：{labels}")
-
-        if info2.get("unfriendly"):
-            reply.append("不良记录：有")
-
+        # 机器人账号检测 - 始终显示
         if info2.get("is_robot"):
             reply.append("机器人账号: 是")
 
-        if info.get("is_vip"):
-            reply.append("QQVIP：已开")
+        # VIP信息显示控制
+        vip_config = display_config.get("DisplayConfig_VipConfig", {})
+        show_vip = vip_config.get("VipConfig_Enable", True)
+        show_years_vip = vip_config.get("VipConfig_YearsVip", True)
+        show_vip_level = vip_config.get("VipConfig_VipLevel", True)
+        
+        if show_vip:
+            if info.get("is_vip"):
+                reply.append("QQVIP：已开")
+            
+            if show_years_vip and info.get("is_years_vip"):
+                reply.append("年VIP：已开")
+            
+            if show_vip_level and int(info.get("vip_level", 0)) != 0:
+                reply.append(f"VIP等级：{info['vip_level']}级")
 
-        if info.get("is_years_vip"):
-            reply.append("年VIP：已开")
+        # 连续登录天数显示控制
+        if display_config.get("DisplayConfig_LoginDays", True):
+            if int(info.get("login_days", 0)) != 0:
+                reply.append(f"连续登录天数：{info['login_days']}")
 
-        if int(info.get("vip_level", 0)) != 0:
-            reply.append(f"VIP等级：{info['vip_level']}级")
+        # 群等级显示控制
+        if display_config.get("DisplayConfig_Level", True):
+            if level := info2.get("level"):
+                reply.append(f"群等级：{int(level)}级")
 
-        if int(info.get("login_days", 0)) != 0:
-            reply.append(f"连续登录天数：{info['login_days']}")
+        # 加群时间显示控制
+        if display_config.get("DisplayConfig_JoinTime", True):
+            if join_time := info2.get("join_time"):
+                reply.append(
+                    f"加群时间：{datetime.fromtimestamp(join_time).strftime('%Y-%m-%d')}"
+                )
 
-        if level := info2.get("level"):
-            reply.append(f"群等级：{int(level)}级")
-
-        if join_time := info2.get("join_time"):
-            reply.append(
-                f"加群时间：{datetime.fromtimestamp(join_time).strftime('%Y-%m-%d')}"
-            )
-
+        # QQ等级显示控制
         if qqLevel := info.get("qqLevel"):
             reply.append(f"QQ等级：{int(qqLevel)}级")
 
+        # 注册时间显示控制
         if reg_time := info.get("reg_time"):
             reply.append(
                 f"注册时间：{datetime.fromtimestamp(reg_time).strftime('%Y年')}"
             )
 
-        if long_nick := info.get("long_nick"):
-            lines = textwrap.wrap(text="签名：" + long_nick, width=15)
-            reply.extend(lines)
+        # 个性签名显示控制
+        if display_config.get("DisplayConfig_LongNick", True):
+            if long_nick := info.get("long_nick"):
+                lines = textwrap.wrap(text="签名：" + long_nick, width=15)
+                reply.extend(lines)
 
         return reply
 
