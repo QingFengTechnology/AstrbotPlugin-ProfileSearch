@@ -192,17 +192,17 @@ class ProfileSearch(Star):
             reply.append(f"昵称：{nickname}")
 
         # 群昵称显示控制
-        if display_config.get("DisplayConfig_Card", True):
+        if display_config.get("DisplayConfig_Card"):
             if card := info2.get("card"):
                 reply.append(f"群昵称：{card}")
 
         # 群头衔显示控制
-        if display_config.get("DisplayConfig_Title", True):
+        if display_config.get("DisplayConfig_Title"):
             if title := info2.get("title"):
                 reply.append(f"头衔：{title}")
             
         # 性别显示控制
-        if display_config.get("DisplayConfig_Sex", True):
+        if display_config.get("DisplayConfig_Sex"):
             sex = info.get("sex")
             if sex == "male":
                 reply.append("性别：男")
@@ -211,9 +211,9 @@ class ProfileSearch(Star):
 
         # 生日相关显示控制
         birthday_config = display_config.get("DisplayConfig_BirthdayConfig", {})
-        show_birthday = birthday_config.get("BirthdayConfig_Enable", True)
-        show_constellation = birthday_config.get("BirthdayConfig_Constellation", True)
-        show_zodiac = birthday_config.get("BirthdayConfig_Zodiac", True)
+        show_birthday = birthday_config.get("BirthdayConfig_Enable")
+        show_constellation = birthday_config.get("BirthdayConfig_Constellation")
+        show_zodiac = birthday_config.get("BirthdayConfig_Zodiac")
         
         if show_birthday and info.get("birthday_year") and info.get("birthday_month") and info.get("birthday_day"):
             reply.append(f"生日：{info['birthday_month']}-{info['birthday_day']}")
@@ -225,30 +225,30 @@ class ProfileSearch(Star):
                 reply.append(f"生肖：{self.get_zodiac(int(info['birthday_year']), int(info['birthday_month']), int(info['birthday_day']))}")
 
         # 年龄显示控制
-        if display_config.get("DisplayConfig_Age", True):
+        if display_config.get("DisplayConfig_Age"):
             if age := info.get("age"):
                 reply.append(f"年龄：{age}岁")
 
         # 手机号码显示控制
-        if display_config.get("DisplayConfig_PhoneNum", True):
+        if display_config.get("DisplayConfig_PhoneNum"):
             if phoneNum := info.get("phoneNum"):
                 if phoneNum != "-":
                     reply.append(f"电话：{phoneNum}")
 
         # 邮箱显示控制
-        if display_config.get("DisplayConfig_Email", True):
+        if display_config.get("DisplayConfig_Email"):
             if eMail := info.get("eMail", False):
                 if eMail != "-":
                     reply.append(f"邮箱：{eMail}")
 
         # 邮编显示控制
-        if display_config.get("DisplayConfig_PostCode", True):
+        if display_config.get("DisplayConfig_PostCode"):
             if postCode := info.get("postCode", False):
                 if postCode != "-":
                     reply.append(f"邮编：{postCode}")
 
         # 现居地显示控制
-        if display_config.get("DisplayConfig_Address", True):
+        if display_config.get("DisplayConfig_Address"):
             country = info.get("country")
             province = info.get("province")
             city = info.get("city")
@@ -258,41 +258,41 @@ class ProfileSearch(Star):
                 reply.append(f"现居：{country}")
 
         # 家乡显示控制
-        if display_config.get("DisplayConfig_HomeTown", True):
+        if display_config.get("DisplayConfig_HomeTown"):
             if homeTown := info.get("homeTown"):
                 if homeTown != "0-0-0":
                     reply.append(f"来自：{self.parse_home_town(homeTown)}")
 
         # 地址显示控制
-        if display_config.get("DisplayConfig_Address", True):
+        if display_config.get("DisplayConfig_Address"):
             if address := info.get("address", False):
                 if address != "-":
                     reply.append(f"地址：{address}")
 
         # 血型显示控制
-        if display_config.get("DisplayConfig_BloodType", True):
+        if display_config.get("DisplayConfig_BloodType"):
             if kBloodType := info.get("kBloodType"):
                 reply.append(f"血型：{self.get_blood_type(int(kBloodType))}")
 
         # 职业显示控制
-        if display_config.get("DisplayConfig_Career", True):
+        if display_config.get("DisplayConfig_Career"):
             if (
                 makeFriendCareer := info.get("makeFriendCareer")
             ) and makeFriendCareer != "0":
                 reply.append(f"职业：{self.get_career(int(makeFriendCareer))}")
 
         # 备注显示控制
-        if display_config.get("DisplayConfig_Remark", True):
+        if display_config.get("DisplayConfig_Remark"):
             if remark := info.get("remark"):
                 reply.append(f"备注：{remark}")
 
         # 标签显示控制
-        if display_config.get("DisplayConfig_Labels", True):
+        if display_config.get("DisplayConfig_Labels"):
             if labels := info.get("labels"):
                 reply.append(f"标签：{labels}")
 
         # 风险账号显示控制
-        if display_config.get("DisplayConfig_Unfriendly", True):
+        if display_config.get("DisplayConfig_Unfriendly"):
             if info2.get("unfriendly"):
                 reply.append("不良记录：有")
 
@@ -302,9 +302,9 @@ class ProfileSearch(Star):
 
         # VIP信息显示控制
         vip_config = display_config.get("DisplayConfig_VipConfig", {})
-        show_vip = vip_config.get("VipConfig_Enable", True)
-        show_years_vip = vip_config.get("VipConfig_YearsVip", True)
-        show_vip_level = vip_config.get("VipConfig_VipLevel", True)
+        show_vip = vip_config.get("VipConfig_Enable")
+        show_years_vip = vip_config.get("VipConfig_YearsVip")
+        show_vip_level = vip_config.get("VipConfig_VipLevel")
         
         if show_vip:
             if info.get("is_vip"):
@@ -317,17 +317,17 @@ class ProfileSearch(Star):
                 reply.append(f"VIP等级：{info['vip_level']}级")
 
         # 连续登录天数显示控制
-        if display_config.get("DisplayConfig_LoginDays", True):
+        if display_config.get("DisplayConfig_LoginDays"):
             if int(info.get("login_days", 0)) != 0:
                 reply.append(f"连续登录天数：{info['login_days']}")
 
         # 群等级显示控制
-        if display_config.get("DisplayConfig_Level", True):
+        if display_config.get("DisplayConfig_Level"):
             if level := info2.get("level"):
                 reply.append(f"群等级：{int(level)}级")
 
         # 加群时间显示控制
-        if display_config.get("DisplayConfig_JoinTime", True):
+        if display_config.get("DisplayConfig_JoinTime"):
             if join_time := info2.get("join_time"):
                 reply.append(
                     f"加群时间：{datetime.fromtimestamp(join_time).strftime('%Y-%m-%d')}"
@@ -344,7 +344,7 @@ class ProfileSearch(Star):
             )
 
         # 个性签名显示控制
-        if display_config.get("DisplayConfig_LongNick", True):
+        if display_config.get("DisplayConfig_LongNick"):
             if long_nick := info.get("long_nick"):
                 lines = textwrap.wrap(text="签名：" + long_nick, width=15)
                 reply.extend(lines)
