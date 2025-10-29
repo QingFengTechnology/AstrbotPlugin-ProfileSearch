@@ -131,8 +131,7 @@ class ProfileSearch(Star):
         # 检查群聊白名单
         group_id = event.get_group_id()
         if group_id and self.whitelist_groups and str(group_id) not in self.whitelist_groups:
-            logger.info(f"[ProfileSearch] 调取目标 {target_id} 所在群聊 {group_id} 不在白名单中，拒绝资料调用请求。")
-            yield event.plain_result(f"当前群聊(ID: {group_id})不在白名单中，请联系管理员添加。")
+            logger.debug(f"[ProfileSearch] 调取目标 {target_id} 所在群聊 {group_id} 不在白名单中，静默取消调用请求。")
             return
         
         # 检查速率限制
