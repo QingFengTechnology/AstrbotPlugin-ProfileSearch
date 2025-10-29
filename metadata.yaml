@@ -1,5 +1,6 @@
-name: ProfileSearch
+name: astrbot_plugin_profile_search
+display_name: ProfileSearch
 desc: 一个拉取用户QQ主页信息的假盒插件
-version: v1.5.0
+version: v1.5.1
 author: QingFeng
 repo: https://github.com/QingFengTechnology/AstrbotPlugin-ProfileSearch
