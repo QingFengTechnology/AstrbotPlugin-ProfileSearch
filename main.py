@@ -121,11 +121,12 @@ class ProfileSearch(Star):
             None,
         )
         if not target_id:
-            target_id = (
-                input_id
-                if input_id and str(input_id) != self_id
-                else event.get_sender_id()
-            )
+            target_id = input_id if input_id and str(input_id) != self_id else None
+            
+        # 如果没有指定目标用户，直接返回
+        if not target_id:
+            logger.debug(f"[ProfileSearch] 用户 {event.get_sender_id()} 未指定目标用户，静默取消调用请求。")
+            return
             
         # 检查群聊白名单
         group_id = event.get_group_id()
