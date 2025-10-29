@@ -82,7 +82,7 @@ class ProfileSearch(Star):
             )
         except:  # noqa: E722
             logger.info(f"[ProfileSearch] 目标 {target_id} 无效，拒绝资料调用请求。")
-            return Comp.Plain("无效的QQ号。")
+            return Comp.Plain("查询目标非法。")
 
         # 获取用户群信息
         try:
@@ -93,6 +93,11 @@ class ProfileSearch(Star):
             member_info = {}
             pass
 
+        # 检查是否有nickname，如果没有则返回提示
+        if not stranger_info.get("nickname"):
+            logger.info(f"[ProfileSearch] 目标 {target_id} 不存在或无法获取资料，取消后续流程。")
+            return Comp.Plain("查询目标非法。")
+        
         avatar: Optional[bytes] = await self.get_avatar(str(target_id))
         # 如果获取头像失败，使用默认白图
         if not avatar:
